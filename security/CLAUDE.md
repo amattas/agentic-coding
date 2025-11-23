@@ -109,6 +109,7 @@ When developing an exploit, **try strategies in order of simplicity**:
 | Agent | Wave | Priority | When to use |
 |-------|------|----------|-------------|
 | `binary-scanner` | A | **CORE** | First look at any new binary |
+| `security-researcher` | A/B | OPTIONAL | Research CVEs, techniques, tool docs, prior writeups |
 | `vulnerability-hunter` | B | **CORE** | Identify vulnerability class |
 | `reverse-engineer` | B | **CORE** | When behavior is unclear |
 | `crypto-analyzer` | B | OPTIONAL | Encryption/obfuscation present |
@@ -220,6 +221,7 @@ analysis/
 When starting any security challenge or analysis:
 
 - USE `binary-scanner` to gather initial information
+- USE `security-researcher` (if researching CVEs, techniques, or prior writeups)
 - Produces `context/binary-info.md` with:
   - Architecture, file type, security mitigations
   - Initial strings and symbols
@@ -237,6 +239,7 @@ Produces:
 - `context/vulnerability-analysis.md`
 - `context/reverse-engineering.md`
 - `context/crypto-analysis.md`
+- `context/research.md` (if external research was needed)
 
 ### Wave C – Exploitation Development
 

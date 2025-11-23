@@ -109,6 +109,7 @@ Use this to decide where to start:
 | `dependency-mapper` | A | OPTIONAL | Complex dependencies, microservices, monorepos |
 | `test-coverage-baseline` | A | OPTIONAL | Before refactoring or if coverage is unknown |
 | `performance-baseline` | A | OPTIONAL | Performance-sensitive features only |
+| `web-researcher` | A/B | OPTIONAL | Research docs, libraries, patterns before implementing |
 | `spec-synthesizer` | B | **CORE** | Any non-trivial feature or ambiguous requirements |
 | `arch-designer` | B | **CORE** | Multi-component features, new patterns |
 | `api-designer` | B | OPTIONAL | Public APIs, external contracts, service interfaces |
@@ -147,12 +148,14 @@ When starting significant work (new feature, major refactor):
 - `dependency-mapper` (if dependencies are non-trivial)
 - `test-coverage-baseline` (if refactoring or coverage unknown)
 - `performance-baseline` (if performance-sensitive work)
+- `web-researcher` (if unfamiliar libraries/APIs/patterns involved)
 
 **Required artifacts:**
 - `context/repo-map.md` — Repository structure and patterns
 - `context/dependency-graph.md` — Inter-module dependencies (if complex)
 - `context/test-coverage-baseline.md` — Test coverage metrics (if needed)
 - `context/perf-baseline.md` — Performance baseline (if needed)
+- `context/research.md` — Library/pattern research findings (if needed)
 - `STATUS.md` updated with summary and known risks
 
 **Wave A complete when:**
