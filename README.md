@@ -222,7 +222,7 @@ A few things I discovered while building these:
 
 ## License
 
-MIT
+MIT - See [LICENSE](LICENSE)
 
 ---
 
