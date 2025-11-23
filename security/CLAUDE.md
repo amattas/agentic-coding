@@ -425,17 +425,26 @@ Based on pwntools conventions:
 ```python
 #!/usr/bin/env python3
 from pwn import *
-import sys
 
 context.arch = 'amd64'  # or 'i386'
 
 EXECUTABLE = "./target"
-ENV = {}
+HOST = "localhost"
+PORT = 9999
 
-# Connection - comment out alternatives
-p = process([EXECUTABLE], env=ENV)
-#gdb.attach(p, gdbscript="b *main")
-#p = remote("localhost", PORT)
+# CRITICAL: Stack consistency
+ARGV0 = "/pwn"  # Fixed argv[0] = consistent stack addresses
+ENV = {}        # Empty environment
+
+def conn():
+    if args.REMOTE:
+        return remote(HOST, PORT)
+    elif args.GDB:
+        return gdb.debug([EXECUTABLE], env=ENV, argv=[ARGV0], gdbscript='b *main\nc')
+    else:
+        return process([EXECUTABLE], env=ENV, argv=[ARGV0])
+
+p = conn()
 
 # ELF setup
 elf = ELF(EXECUTABLE)
@@ -687,11 +696,70 @@ For malware analysis:
 
 1. **Stack alignment** - x86-64 requires 16-byte alignment before calls
 2. **Virtual vs file offsets** - ELF loading changes addresses
-3. **Remote vs local** - Stack layout differs (env vars, argv)
+3. **Remote vs local stack mismatch** - See critical section below
 4. **Endianness** - x86 is little-endian
 5. **Null bytes** - Many functions terminate on \x00
 6. **Bad characters** - Some inputs filter certain bytes
 7. **SUID binaries** - Can't use ptrace, need alternative debugging
+
+### CRITICAL: Stack Consistency for Debugging
+
+**This is the #1 cause of "my addresses don't match GDB" issues.**
+
+When Linux starts a process, it pushes onto the stack (from high to low addresses):
+1. Environment variable strings
+2. Argument strings (including argv[0] - the program path)
+3. Pointers to the above
+
+Without fixing these, every run has different stack addresses - making debugging impossible.
+
+#### The Problem
+
+```
+Run 1:  ./target                    → argv[0] = "./target" (8 bytes)
+Run 2:  python3 exploit.py          → argv[0] = different
+GDB:    gdb ./target                → argv[0] = different again
+
+Result: Stack addresses are DIFFERENT every time = can't debug reliably
+```
+
+Your shell also adds environment variables (PATH, HOME, TERM, etc.) to the stack.
+
+#### The Solution
+
+**ALWAYS use a fixed argv[0] and empty environment:**
+
+```python
+# Fixed argv[0] - use any short consistent value
+ARGV0 = "/pwn"
+ENV = {}  # Empty environment
+
+def conn():
+    if args.REMOTE:
+        return remote(HOST, PORT)
+    elif args.GDB:
+        return gdb.debug([EXECUTABLE], env=ENV, argv=[ARGV0], gdbscript='...')
+    else:
+        return process([EXECUTABLE], env=ENV, argv=[ARGV0])
+```
+
+#### Why This Works
+
+- `env={}` removes all shell environment variables from the stack
+- `argv=[ARGV0]` spoofs a fixed program name regardless of how you invoke
+- Result: Stack addresses are **IDENTICAL** between normal run and GDB debug
+
+#### Remote Considerations
+
+| Exploit Type | Does stack matter for remote? |
+|--------------|------------------------------|
+| ROP / ret2win (PIE off) | No - code addresses are fixed |
+| ret2libc | No - libc addresses from leak |
+| Stack buffer / shellcode | Yes - need leak OR match remote argv[0] |
+
+If you need absolute stack addresses for remote:
+- **Best**: Leak stack address from the binary
+- **Alternative**: Match remote's argv[0] (check Dockerfile for binary path)
 
 ## Resources
 
