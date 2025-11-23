@@ -578,59 +578,73 @@ Use MCP tools for:
 
 All security work must produce artifacts in a consistent format:
 
-**`report.md`** (technical details):
+**`REPORT.md`** (combined technical report and writeup):
 ```markdown
-# Technical Report: [Challenge/Target Name]
-
-## Binary Metadata
-- File: `target` (or sample name)
-- Architecture: amd64 / i386 / arm
-- Checksec output: (paste full output)
-
-## Identified Vulnerabilities
-- Type: (BOF, format string, heap, logic, etc.)
-- Location: (function name, offset)
-- Trigger: (how to reach vulnerable code)
-
-## Key Addresses
-| Symbol/Gadget | Address | Notes |
-|---------------|---------|-------|
-| buffer_start | 0x... | |
-| ret_offset | 72 | bytes to overwrite RIP |
-| pop_rdi | 0x... | from ropper |
-| libc_base | 0x... | leaked via ... |
-
-## Exploit Strategy
-1. Step-by-step approach
-2. Why this strategy was chosen
-3. Alternatives considered
-
-## Commands and Tools Used
-- `checksec target`
-- `ropper --file target --search "pop rdi"`
-- etc.
-```
-
-**`writeup.md`** (narrative explanation):
-```markdown
-# [Challenge Name] Writeup
+# Challenge: [NAME]
 
 ## Overview
 High-level description suitable for someone learning.
 
-## Approach
+## Summary
+One paragraph technical summary of the vulnerability and exploitation approach.
+
+## Analysis
+
+### Binary Properties
+| Property | Value |
+|----------|-------|
+| Architecture | x86-64 / i386 |
+| NX | Enabled / Disabled |
+| Stack Canary | Found / Not found |
+| PIE | Enabled / Disabled |
+| RELRO | Full / Partial / None |
+
+### Vulnerability
+- Type: (BOF, format string, heap, logic, etc.)
+- Location: (function name, offset)
+- Trigger: (how to reach vulnerable code)
+
+### Key Addresses
+| Symbol | Address | Purpose |
+|--------|---------|---------|
+| main | 0x... | Entry point |
+| win | 0x... | Target function |
+| pop rdi | 0x... | ROP gadget |
+
+## Exploitation
+
+### Approach
 1. First, I examined the binary...
 2. I noticed that...
 3. To exploit this...
 
-## Solution
-```python
-# key parts of exploit
-```
+### Payload Structure
+[description of payload layout]
+
+### Challenges Encountered
+- Any obstacles and how they were overcome
+
+## Exploit Code
+See exploit.py
+
+## Flag
+flag{...}
+
+## Key Concepts
+Brief explanation of techniques used - helpful for learning.
+
+## Mitigations
+How this vulnerability could be prevented.
 
 ## Lessons Learned
 - What made this interesting
 - What would you do differently
+
+## Tools Used
+- pwntools, GDB/pwndbg, ropper, etc.
+
+## References
+- Links used
 ```
 
 **`STATUS.md`** (progress tracking):
@@ -666,13 +680,10 @@ High-level description suitable for someone learning.
 | Artifact | Filename | Location |
 |----------|----------|----------|
 | Progress tracking | `STATUS.md` | root or problem dir |
-| Technical report | `report.md` | problem dir |
-| Narrative writeup | `writeup.md` | problem dir |
+| Technical report & writeup | `REPORT.md` | problem dir |
 | Exploit code | `exploit.py` | problem dir |
 | Address finder | `find.py` | problem dir (if needed) |
 | Disassembly | `target.asm` | problem dir |
-
-**Note:** Use lowercase filenames (`report.md` not `REPORT.md`) for consistency.
 
 ## Deliverables Checklist
 
@@ -681,13 +692,12 @@ For CTF challenges:
 - [ ] `STATUS.md` - Progress tracking (update frequently)
 - [ ] `exploit.py` - Working exploit (matches examples/ style if available)
 - [ ] `find.py` - Address discovery (if needed)
-- [ ] `writeup.md` - Simple explanation (10th-grade level)
-- [ ] `report.md` - Technical writeup (addresses, techniques)
+- [ ] `REPORT.md` - Combined technical writeup and explanation
 
 For malware analysis:
 
 - [ ] `STATUS.md` - Progress tracking
-- [ ] `report.md` - Complete analysis documentation
+- [ ] `REPORT.md` - Complete analysis documentation
 - [ ] Extracted artifacts in `extracted/`
 - [ ] Analysis scripts in `scripts/`
 - [ ] Key findings documented with addresses/offsets

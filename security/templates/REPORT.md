@@ -4,6 +4,10 @@
 **Points**: XX
 **Solves**: XX
 
+## Overview
+
+[High-level description suitable for someone learning. What is this challenge about?]
+
 ## Summary
 
 [One paragraph technical summary of the vulnerability and exploitation approach]
@@ -38,11 +42,13 @@
 
 ## Exploitation
 
-### Strategy
+### Approach
 
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
+[Step-by-step explanation of the approach in plain English]
+
+1. First, I examined the binary...
+2. I noticed that...
+3. To exploit this...
 
 ### Payload Structure
 
@@ -60,7 +66,7 @@ Offset N:    [return address / ROP chain]
 ## Exploit Code
 
 ```python
-# See exploit.py
+# See exploit.py for full code
 ```
 
 ## Flag
@@ -68,6 +74,10 @@ Offset N:    [return address / ROP chain]
 ```
 flag{...}
 ```
+
+## Key Concepts
+
+[Brief explanation of techniques used - helpful for learning]
 
 ## Mitigations
 
@@ -82,6 +92,11 @@ This vulnerability could be prevented by:
 - GDB / pwndbg
 - ropper
 - [Other tools]
+
+## Lessons Learned
+
+- [What made this interesting]
+- [What would you do differently]
 
 ## References
 

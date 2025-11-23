@@ -39,7 +39,7 @@ Orchestrate work across multiple problems in a lab or CTF.
 ┌─────────────────────────────────────────────────────────────┐
 │ 5. DOCUMENTATION (Wave D)                                   │
 │    Spawn writeup-writer for solved problems                 │
-│    → Produces: writeup.md, report.md per problem            │
+│    → Produces: REPORT.md per problem                        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -71,7 +71,7 @@ ls -d */
 # - STATUS.md (current state)
 # - target (binary)
 # - exploit.py (if exists, check if working)
-# - report.md / writeup.md (documentation complete?)
+# - REPORT.md (documentation complete?)
 ```
 
 ### 3. Determine Parallelization Plan
@@ -107,7 +107,7 @@ For each problem needing work, spawn the appropriate agent:
 | Analysis done, simple vuln | `exploit-developer` | `exploit.py` |
 | Analysis done, needs gadgets | `gadget-finder` then `exploit-developer` | Gadget list, then `exploit.py` |
 | Exploit working | `exploit-tester` | Validated exploit |
-| Tested, needs docs | `writeup-writer` | `writeup.md`, `report.md` |
+| Tested, needs docs | `writeup-writer` | `REPORT.md` |
 | Blocked | Skip | Update STATUS with blocker |
 
 ## Output Requirements

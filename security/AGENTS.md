@@ -18,7 +18,7 @@ This guide is designed to work with any AI coding assistant. Tool-specific trans
 **If you're not Claude Code:**
 - Ignore references to "subagents" and "skills" - these are Claude-specific
 - Follow the wave model using your native capabilities
-- Write artifacts to the file locations specified (`STATUS.md`, `report.md`, etc.)
+- Write artifacts to the file locations specified (`STATUS.md`, `REPORT.md`, etc.)
 - Use `pwntools` for exploit development regardless of AI tool
 - The exploitation patterns and techniques are universal
 
@@ -36,7 +36,7 @@ This guide is designed to work with any AI coding assistant. Tool-specific trans
 1. **Verify authorization first** - ask user to confirm CTF/lab context if unclear
 2. Read `STATUS.md` first if it exists
 3. Follow the wave sequence for each challenge
-4. Write findings to `STATUS.md`, final docs to `report.md` and `writeup.md`
+4. Write findings to `STATUS.md`, final docs to `REPORT.md`
 
 **Quick decision:**
 - New binary? → Wave A (file, checksec, strings baseline)

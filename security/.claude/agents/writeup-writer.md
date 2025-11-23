@@ -31,39 +31,77 @@ Write for a 10th-grade reading level:
 [Brief explanation of techniques used]
 ```
 
-### 2. REPORT.md (Technical Writeup)
+### 2. REPORT.md (Combined Technical Report & Writeup)
 
-Follow this format:
+Follow the template in `templates/REPORT.md`:
 
 ```markdown
-# Challenge Name - Technical Report
+# Challenge: [NAME]
+
+**Category**: Binary Exploitation / Pwn / Reverse Engineering
+**Points**: XX
+**Solves**: XX
+
+## Overview
+[High-level description suitable for someone learning]
 
 ## Summary
-[One paragraph overview]
+[One paragraph technical summary]
 
-## Vulnerability Details
-- Type: [Buffer overflow, format string, etc.]
-- Location: [Function/address]
-- Trigger: [How to reach it]
+## Analysis
 
-## Exploitation
-### Setup
-[Environment, tools used]
+### Binary Properties
+| Property | Value |
+|----------|-------|
+| Architecture | x86-64 / i386 |
+| NX | Enabled / Disabled |
+| Stack Canary | Found / Not found |
+| PIE | Enabled / Disabled |
+| RELRO | Full / Partial / None |
+
+### Vulnerability
+- **Type**: [Buffer overflow, format string, etc.]
+- **Location**: Function `name` at `0xADDRESS`
+- **Root Cause**: [Why the vulnerability exists]
+- **Trigger**: [How to reach the vulnerable code]
 
 ### Key Addresses
-| Symbol | Address |
-|--------|---------|
-| main   | 0x...   |
-| win    | 0x...   |
+| Symbol | Address | Purpose |
+|--------|---------|---------|
+| main | 0x... | Entry point |
+| win | 0x... | Target function |
+
+## Exploitation
+
+### Approach
+1. First, I examined the binary...
+2. I noticed that...
+3. To exploit this...
 
 ### Payload Structure
 [Explain payload layout]
 
-### Exploit Code
+### Challenges Encountered
+- [Any obstacles and how they were overcome]
+
+## Exploit Code
 [Link to or embed exploit.py]
 
-## Mitigation
+## Flag
+flag{...}
+
+## Key Concepts
+[Brief explanation of techniques used - helpful for learning]
+
+## Mitigations
 [How this could be prevented]
+
+## Lessons Learned
+- [What made this interesting]
+- [What would you do differently]
+
+## Tools Used
+- pwntools, GDB/pwndbg, ropper, etc.
 
 ## References
 [Links used]
@@ -79,3 +117,5 @@ Mark challenge as solved with final notes.
 - Include all necessary addresses
 - Show payload structure visually
 - Credit any references used
+- Overview section should be accessible to beginners
+- Technical sections should have all details needed to reproduce
