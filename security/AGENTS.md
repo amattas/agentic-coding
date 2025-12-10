@@ -268,14 +268,35 @@ lab-name/
 
 **Always maintain STATUS.md** to enable picking up work after interruptions.
 
-**Root STATUS.md** (for multi-problem labs): Table with problem, status, start/end times, difficulty, notes.
+### Root STATUS.md (multi-problem labs)
+```markdown
+| Problem | Status | Started | Completed | Difficulty | Notes |
+|---------|--------|---------|-----------|------------|-------|
+| prob1 | ✅ Solved | 09:00 | 11:30 | Easy | ret2win |
+| prob2 | 🔄 Active | 12:00 | - | Medium | ROP needed |
+| prob3 | ❌ Todo | - | - | Hard | PIE+RELRO |
+```
 
-**Problem STATUS.md** must include:
-- Timeline (started/completed)
-- Current phase (recon/analysis/exploitation/documentation)
-- Key findings (buffer size, offsets, leaked values)
-- What's working vs what's not working
-- Next steps
+### Problem STATUS.md
+```markdown
+## Timeline
+Started: [time] | Completed: -
+
+## Phase
+[x] Recon [x] Analysis [ ] Exploitation [ ] Documentation
+
+## Findings
+- Buffer: 64 bytes | Offset to RIP: 72
+- Canary: leaked via format string
+
+## Working / Not Working
+- ✅ Libc leak successful
+- ❌ ROP chain crashes (stack alignment?)
+
+## Next
+1. Add ret gadget for alignment
+2. Test full chain
+```
 
 When resuming: read STATUS.md first, check what's discovered, review failed attempts, continue from last good state.
 
@@ -341,6 +362,41 @@ If you need absolute stack addresses for remote:
 ## REPORT.md Contents
 
 Include: overview, binary properties table, vulnerability details, key addresses, exploitation approach, payload structure, flag, and lessons learned.
+
+## Tool Commands Quick Reference
+
+### GDB/pwndbg
+```
+checksec              # Show mitigations
+vmmap                 # Memory map
+telescope $rsp 20     # Stack contents
+cyclic 200            # Generate pattern
+cyclic -l 0x61616168  # Find offset
+```
+
+### ropper
+```bash
+ropper --file target --search "pop rdi"
+ropper --file target --search "ret"
+```
+
+### pwntools
+```python
+cyclic(200)                    # Pattern
+cyclic_find(0x61616168)        # Offset
+elf.symbols['main']            # Symbol address
+elf.got['puts']                # GOT entry
+elf.plt['puts']                # PLT entry
+next(elf.search(b'/bin/sh'))   # Find string
+```
+
+### checksec output interpretation
+```
+RELRO: Full/Partial/None  → GOT protection level
+Stack: Canary found/No    → Stack smash protection
+NX: enabled/disabled      → Executable stack
+PIE: enabled/No PIE       → Position independent
+```
 
 ## Priority Order
 

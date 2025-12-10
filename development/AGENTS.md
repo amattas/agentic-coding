@@ -183,10 +183,29 @@ Once implementation and tests are in place:
 
 **Always maintain STATUS.md** to enable picking up work after interruptions.
 
-**STATUS.md must include:**
-- Task overview table (task, status, current wave, notes)
-- Artifact status table (which exist, which are draft/complete/missing)
-- Session history (what was done, what's blocked)
+```markdown
+# Status: [PROJECT NAME]
+**Updated**: [timestamp] | **Tasks**: X/Y complete
+
+## Tasks
+| Task | Status | Wave | Notes |
+|------|--------|------|-------|
+| Feature A | ✅ Done | E | PR merged |
+| Feature B | 🔄 Active | D | Writing tests |
+| Bug fix C | ⏳ Blocked | B | Need input |
+
+## Artifacts
+| File | Status |
+|------|--------|
+| spec.md | ✅ Done |
+| architecture.md | 🔄 Draft |
+| test-plan.md | ❌ Missing |
+
+## Session Log
+- Completed: [what]
+- In progress: [what]
+- Blocked: [what + why]
+```
 
 When resuming: read STATUS.md first, skip completed work, resume from last good state, update frequently.
 
