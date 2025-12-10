@@ -1,6 +1,6 @@
 # Claude Orchestrator Configuration
 
-> **For Claude Code users only.** This file uses Claude Code's advanced features (subagents, skills, wave-based orchestration). If you're using a different AI coding tool (Cursor, Copilot, Codeium, etc.), see **[AGENTS.md](./AGENTS.md)** instead for a simplified guide.
+@include AGENTS.md
 
 ---
 
@@ -21,7 +21,7 @@
 
 **Quick decision:**
 - New repo or unfamiliar codebase? → Start at Wave A
-- Small bugfix in familiar code? → May skip to Wave D (see Wave Selection Heuristics)
+- Small bugfix in familiar code? → May skip to Wave D (see Wave Selection Heuristics in AGENTS.md)
 - Major feature or refactor? → Full wave sequence required
 
 ---
@@ -30,14 +30,16 @@
 
 This file defines how Claude should orchestrate subagents and skills for the SDLC in this repository. It specifies the wave-based workflow, global norms, and how to route work to agents. Detailed technical knowledge and role-specific prompts live in skills and agent definition files, not here.
 
-## Project Structure
+## Claude-Specific Project Structure
 
 ```
 project/
 ├── CLAUDE.md           # This file (orchestrator config)
-├── AGENTS.md           # For other AI tools
+├── AGENTS.md           # For other AI tools (shared content)
 ├── STATUS.md           # Progress tracking for restartability
 ├── .claude/            # Agents and skills
+│   ├── agents/         # Subagent definitions
+│   └── skills/         # Domain knowledge
 │
 ├── context/            # Context artifacts from Wave A
 │   ├── repo-map.md
@@ -52,54 +54,6 @@ project/
 ├── security-requirements.md  # Security controls (if needed)
 └── design-validation.md      # Validation results
 ```
-
-**Key file for restartability:**
-- `STATUS.md`: Tracks task status, active artifacts, agent activity, and session history
-
-## Restartability Protocol
-
-When resuming work:
-
-1. **Read STATUS.md first**
-   - What tasks are done? Skip those
-   - What's in progress? Resume from last state
-   - What's blocked? Note blockers and skip
-
-2. **Check artifact status**
-   - Which context artifacts exist and are current?
-   - Which design artifacts are complete vs draft?
-   - What's missing that needs to be created?
-
-3. **Resume from last known good state**
-   - Don't re-run completed waves
-   - Use existing artifacts as inputs
-   - Continue from the current wave for each task
-
-4. **Update STATUS.md frequently**
-   - After completing any wave
-   - After creating/updating artifacts
-   - After any blocker or breakthrough
-   - At session start and end
-
-## Wave Selection Heuristics
-
-Use this to decide where to start:
-
-| Scenario | Start Wave | Skip? | Notes |
-|----------|------------|-------|-------|
-| New repo or unfamiliar codebase | A | No skips | Must build context first |
-| Major feature (multi-file, new patterns) | A | No skips | Full wave sequence |
-| Moderate feature (known patterns) | B | Skip A if context exists | Use existing `context/*.md` |
-| Small bugfix in familiar code | D | Skip A-C | Direct implementation |
-| One-liner fix or doc update | D | Skip A-C | Shortcut path (see below) |
-| Refactoring existing code | A | No skips | Need test baseline first |
-| Performance-sensitive work | A | No skips | Need perf baseline |
-
-**Decision tree:**
-1. Is this a new repo or has structure changed significantly? → **Wave A**
-2. Is `context/repo-map.md` current and sufficient? → If no, **Wave A**
-3. Does this require new architecture or API design? → **Wave B**
-4. Is this a simple, low-risk change? → **Wave D** (Shortcut Path)
 
 ## Agent Priority
 
@@ -129,19 +83,9 @@ Use this to decide where to start:
 
 **CORE** = Always use for appropriate work. **OPTIONAL** = Use when context requires it.
 
-## Global Norms
-
-- Be truthful and avoid fabricating APIs, tools, or behavior.
-- Prefer using subagents and skills when they are a better fit than doing everything in a single context.
-- Respect the wave model:
-  - Wave A → Wave B → Wave C → Wave D → Wave E
-- Respect security and safety constraints from the `security-baseline` skill.
-
-## Wave Model
+## Wave Model: Agent Assignments
 
 ### Wave A – Context Gathering
-
-When starting significant work (new feature, major refactor):
 
 **Primary agents:**
 - `repo-scanner` (**CORE**)
@@ -150,23 +94,7 @@ When starting significant work (new feature, major refactor):
 - `performance-baseline` (if performance-sensitive work)
 - `web-researcher` (if unfamiliar libraries/APIs/patterns involved)
 
-**Required artifacts:**
-- `context/repo-map.md` — Repository structure and patterns
-- `context/dependency-graph.md` — Inter-module dependencies (if complex)
-- `context/test-coverage-baseline.md` — Test coverage metrics (if needed)
-- `context/perf-baseline.md` — Performance baseline (if needed)
-- `context/research.md` — Library/pattern research findings (if needed)
-- `STATUS.md` updated with summary and known risks
-
-**Wave A complete when:**
-- [ ] `context/repo-map.md` exists and is current
-- [ ] Dependencies are understood (documented or trivial)
-- [ ] Test coverage is known (documented or acceptable)
-- [ ] `STATUS.md` reflects findings and risks
-
 ### Wave B – Design & Analysis
-
-When requirements or tickets are ambiguous or non-trivial:
 
 **Primary agents:**
 - `spec-synthesizer` (**CORE**) — Must run first
@@ -176,47 +104,12 @@ When requirements or tickets are ambiguous or non-trivial:
 - `security-designer` (if auth/data/external exposure)
 - `performance-profiler` (if performance matters)
 
-**Required artifacts:**
-- `spec.md` — Requirements and acceptance criteria
-- `architecture.md` — Component design and data flow
-- `api-design.md` — Interface specifications (if APIs involved)
-- `test-plan.md` — Test strategy and cases
-- `security-requirements.md` — Security controls (if security-sensitive)
-- `STATUS.md` updated with design progress
-
-**Wave B complete when:**
-- [ ] `spec.md` has clear requirements and acceptance criteria
-- [ ] `architecture.md` documents components and data flow
-- [ ] `test-plan.md` covers happy path, edge cases, failures
-- [ ] Security requirements documented (if applicable)
-- [ ] `STATUS.md` reflects design decisions
-
 ### Wave C – Design Validation
-
-Before writing significant new code:
 
 **Primary agents:**
 - `design-validator` (**CORE**)
 
-**Required artifacts:**
-- `design-validation.md` — Cross-check results
-
-**Validates:**
-- `spec.md` ↔ `architecture.md` consistency
-- `architecture.md` ↔ `api-design.md` consistency
-- `test-plan.md` covers all requirements
-- `security-requirements.md` addressed in design (if present)
-
-**Wave C complete when:**
-- [ ] `design-validation.md` shows no critical issues
-- [ ] All design artifacts are internally consistent
-- [ ] If issues found: resolved and re-validated
-
-**If validation fails:** Re-run relevant Wave B agents, then re-validate.
-
 ### Wave D – Implementation
-
-For actual feature or bugfix implementation:
 
 **Primary agents:**
 - `component-impl-backend` / `component-impl-frontend` / `component-impl-worker` (**CORE**)
@@ -225,26 +118,7 @@ For actual feature or bugfix implementation:
 - `optimizer` (if performance requirements exist)
 - `branch-manager` (for feature branches)
 
-**Required artifacts:**
-- Source code changes (in appropriate directories)
-- Test implementations (mirroring source structure)
-- Updated documentation (if behavior changed)
-- `STATUS.md` updated with implementation progress
-
-**Wave D rules:**
-- Keep write-capable agents scoped to specific directories/file types to avoid conflicts
-- Implement tests defined in `test-plan.md`
-- Update docs in parallel with code changes
-
-**Wave D complete when:**
-- [ ] All specified functionality implemented
-- [ ] Tests written for new code
-- [ ] Documentation updated
-- [ ] `STATUS.md` reflects implementation status
-
 ### Wave E – Review & PR Packaging
-
-Once implementation and tests are in place:
 
 **Primary agents (parallel):**
 - `tester` (**CORE**) — Run tests, report coverage gaps
@@ -256,19 +130,6 @@ Once implementation and tests are in place:
 **Git agents:**
 - `commit-packager` (**CORE**) — Atomic commits
 - `pr-packager` (**CORE**) — PR description
-
-**Required artifacts:**
-- All tests passing
-- `STATUS.md` updated to mark task complete
-- PR description with risks, testing notes, follow-up actions
-
-**Wave E complete when:**
-- [ ] All tests pass
-- [ ] No critical security issues
-- [ ] Code style reviewed
-- [ ] Commits are atomic and well-described
-- [ ] PR is ready for review
-- [ ] `STATUS.md` marked complete
 
 ## Skills Usage
 
@@ -284,41 +145,6 @@ When performing any task, prefer to use the appropriate skills:
 - `commit-conventions` for commit messages.
 
 Do not duplicate skills content in prompts; instead, reference skills and follow their guidance.
-
-## Priorities
-
-When recommendations or goals conflict:
-
-1. Security and safety (including regulatory/compliance)
-2. Correctness and data integrity
-3. Performance and reliability
-4. Maintainability and readability
-5. Minor style preferences
-
-## Shortcut Path: Trivial Changes
-
-For very small, low-risk changes (one-liner bugfix, doc comment, simple refactor):
-
-1. **Skip Waves A–C entirely**
-2. Edit the file directly
-3. Run tests relevant to the change
-4. Update `STATUS.md` with:
-   - What changed
-   - Tests run
-   - Any follow-up needed
-
-**Use shortcut path when:**
-- Change is < 50 lines in a single file
-- No architectural impact
-- No new dependencies
-- Tests are straightforward
-- You understand the surrounding code
-
-**Do NOT use shortcut path when:**
-- Refactoring code you haven't analyzed
-- Touching security-sensitive code
-- Change affects multiple components
-- Tests are missing or unclear
 
 ## When Not to Over-Parallelize
 

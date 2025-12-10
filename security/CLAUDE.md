@@ -1,6 +1,6 @@
 # Security Research & CTF Assistant
 
-> **For Claude Code users only.** This file uses Claude Code's advanced features (subagents, skills, wave-based orchestration). If you're using a different AI coding tool (Cursor, Copilot, Codeium, etc.), see **[AGENTS.md](./AGENTS.md)** instead for a simplified guide.
+@include AGENTS.md
 
 ---
 
@@ -28,81 +28,72 @@
 
 ---
 
+## Purpose
+
 This file defines how Claude Code should orchestrate subagents and skills for security research, CTF challenges, binary exploitation, and malware analysis. Detailed knowledge lives in skills and agent definition files.
 
-## Authorization Gate
+## Claude-Specific Project Structure
 
-**Before doing any exploit development, ALWAYS verify:**
+### Multi-Problem Lab/CTF Layout (Primary)
 
-1. The user has clearly stated one of:
-   - This is a CTF challenge
-   - This is an authorized lab/training environment
-   - This is explicitly authorized penetration testing
-   - No real-world third-party targets are involved
+When a CTF or lab has multiple problems, use this structure:
 
-2. If authorization is unclear:
-   - Ask the user to restate the context and authorization
-   - If they refuse or it's ambiguous, switch to **explanation-only mode**
-   - In explanation-only mode: analyze, explain, and document, but do not produce working exploits
+```
+lab-name/
+├── CLAUDE.md           # This file (orchestrator config)
+├── AGENTS.md           # For other AI tools (shared content)
+├── STATUS.md           # HIGH-LEVEL summary of ALL problems
+├── .claude/            # Agents and skills (symlink or copy)
+│   ├── agents/         # Subagent definitions
+│   └── skills/         # Exploitation techniques
+│
+├── problem1/
+│   ├── README.md       # Problem description (from problem-README template)
+│   ├── STATUS.md       # DETAILED tracking for this problem
+│   ├── target          # Binary
+│   ├── target.asm      # Disassembly
+│   ├── exploit.py      # Working exploit
+│   └── REPORT.md       # Writeup (when solved)
+│
+├── problem2/
+│   ├── README.md
+│   ├── STATUS.md
+│   └── ...
+│
+└── problemN/
+    └── ...
+```
 
-3. When in doubt, ask. It's better to confirm than to overstep.
+### Single Challenge Layout
 
----
+For standalone challenges:
 
-## Context
+```
+challenge/
+├── CLAUDE.md           # Challenge-specific context
+├── AGENTS.md           # Simplified instructions for other tools
+├── STATUS.md           # Progress tracking
+├── target              # Binary being analyzed/exploited
+├── target.asm          # Disassembly (objdump -M intel -d target)
+├── exploit.py          # Working exploit script
+├── find.py             # Address discovery script (if needed)
+├── REPORT.md           # Technical writeup
+└── examples/           # Reference exploits (optional, if provided)
+```
 
-**This is for authorized security testing, CTF competitions, and educational purposes only.**
+### Malware Analysis Layout
 
-Supported activities:
-- CTF (Capture The Flag) challenges
-- Binary exploitation research
-- Malware analysis and reverse engineering
-- Vulnerability research (authorized)
-- Security tool development
-
-## Wave Selection Heuristics
-
-Use this to decide where to start:
-
-| Scenario | Start Wave | Skip? | Notes |
-|----------|------------|-------|-------|
-| Unknown binary | A | No skips | Always run checksec/file/strings first |
-| Simple ret2win (obvious win function) | A | Skip gadget-finder | Direct to exploit-developer after recon |
-| NX enabled, no direct win | A | No skips | Full wave with gadget-finder |
-| Complex protections (PIE+Canary+RELRO) | A | No skips | Full wave, may need multiple analysis passes |
-| Format string vulnerability | A | Skip payload-crafter | Format string has its own patterns |
-| Heap exploitation | A | No skips | Full wave with heap-specific analysis |
-| Multi-problem lab | A | No skips | Use lab-orchestrator for coordination |
-
-**Decision tree:**
-1. Have you run `checksec` and `file` on this binary? → If no, **Wave A**
-2. Is there an obvious `win()` or `get_flag()` function? → Try simple ret2win first
-3. Are there complex protections (PIE, full RELRO, canary)? → Full wave sequence
-4. Is the vulnerability class unclear? → **Wave B** analysis required
-
-## Exploit Strategy Ladder
-
-When developing an exploit, **try strategies in order of simplicity**:
-
-1. **Check for trivial wins first:**
-   - Look for `win()`, `get_flag()`, `shell()` functions
-   - Overwritable return address without canary, PIE disabled?
-   - → Use simple ret2win before anything complex
-
-2. **If no direct win but libc is leakable:**
-   - → Prefer `ret2libc` or `system("/bin/sh")` over full ROP chains
-   - Leak libc base via puts/printf GOT
-
-3. **If control flow is constrained:**
-   - → Use `gadget-finder` for ROP or SROP chains
-   - Check for one_gadget shortcuts in libc
-
-4. **If protections are unclear or exploit fails:**
-   - → Re-run `binary-scanner` and `reverse-engineer`
-   - → Update `STATUS.md` with what didn't work and why
-   - → Try alternative approach
-
-**Golden rule:** Simplest working exploit wins. Don't build a 50-gadget ROP chain when ret2win would work.
+```
+analysis/
+├── CLAUDE.md           # Analysis context
+├── SUMMARY.md          # Complete analysis documentation
+├── sample.bin          # Malware sample (DO NOT EXECUTE)
+├── disassembly/        # Disassembly outputs
+├── decompiled/         # Decompiled source
+├── extracted/          # Extracted payloads/artifacts
+├── scripts/            # Analysis scripts
+└── .mcp.json           # MCP server config (pyghidra-mcp, etc.)
+```
 
 ## Agent Priority
 
@@ -123,119 +114,30 @@ When developing an exploit, **try strategies in order of simplicity**:
 
 **CORE** = Always use for appropriate work. **OPTIONAL** = Use when context requires it.
 
-## Global Norms
-
-- Be truthful - don't fabricate addresses, offsets, or exploit behavior
-- Prefer using subagents and skills when they fit better than single-context work
-- Respect the wave model: Wave A → Wave B → Wave C → Wave D
-- Respect ethical constraints from the guidelines below
-- Keep exploits simple and linear (match examples/ style if available)
-
-## Ethical Guidelines
-
-### DO
-- Analyze existing malware behavior and document findings
-- Develop exploits for CTF challenges and authorized testing
-- Write decryption/extraction/analysis scripts
-- Create documentation and technical reports
-- Answer questions about code functionality and vulnerabilities
-- Develop analysis tools (LD_PRELOAD hooks, parsers, fuzzers)
-
-### DO NOT
-- Create malware for unauthorized deployment
-- Improve or augment malicious capabilities for real-world use
-- Remove anti-analysis features to make malware more effective
-- Execute malware outside controlled environments
-- Target systems without explicit authorization
-
-## Project Structure
-
-### Multi-Problem Lab/CTF Layout (Primary)
-
-When a CTF or lab has multiple problems, use this structure:
-
-```
-lab-name/
-├── CLAUDE.md           # This file (orchestrator config)
-├── AGENTS.md           # For other AI tools
-├── STATUS.md           # HIGH-LEVEL summary of ALL problems
-├── .claude/            # Agents and skills (symlink or copy)
-│
-├── problem1/
-│   ├── README.md       # Problem description (from problem-README template)
-│   ├── STATUS.md       # DETAILED tracking for this problem
-│   ├── target          # Binary
-│   ├── target.asm      # Disassembly
-│   ├── exploit.py      # Working exploit
-│   └── REPORT.md       # Writeup (when solved)
-│
-├── problem2/
-│   ├── README.md
-│   ├── STATUS.md
-│   └── ...
-│
-└── problemN/
-    └── ...
-```
-
-**Key files for restartability:**
-- `STATUS.md` (root): Which problems are solved/in-progress/blocked
-- `*/STATUS.md` (per-problem): Detailed state, findings, failed attempts
-
-### Single Challenge Layout
-
-For standalone challenges:
-
-```
-challenge/
-├── CLAUDE.md           # Challenge-specific context
-├── AGENTS.md           # Simplified instructions for other tools
-├── STATUS.md           # Progress tracking
-├── target              # Binary being analyzed/exploited
-├── target.asm          # Disassembly (objdump -M intel -d target)
-├── exploit.py          # Working exploit script
-├── find.py             # Address discovery script (if needed)
-├── README.md           # 10th-grade level explanation
-├── REPORT.md           # Technical writeup
-└── examples/           # Reference exploits (optional, if provided)
-```
-
-### Malware Analysis Layout
-
-```
-analysis/
-├── CLAUDE.md           # Analysis context
-├── SUMMARY.md          # Complete analysis documentation
-├── sample.bin          # Malware sample (DO NOT EXECUTE)
-├── disassembly/        # Disassembly outputs
-├── decompiled/         # Decompiled source
-├── extracted/          # Extracted payloads/artifacts
-├── scripts/            # Analysis scripts
-└── .mcp.json           # MCP server config (pyghidra-mcp, etc.)
-```
-
-## Wave Model
+## Wave Model: Agent Assignments
 
 ### Wave A – Reconnaissance
 
 When starting any security challenge or analysis:
 
-- USE `binary-scanner` to gather initial information
-- USE `security-researcher` (if researching CVEs, techniques, or prior writeups)
-- Produces `context/binary-info.md` with:
-  - Architecture, file type, security mitigations
-  - Initial strings and symbols
+**Primary agents:**
+- `binary-scanner` (**CORE**)
+- `security-researcher` (if researching CVEs, techniques, or prior writeups)
+
+**Produces:**
+- `context/binary-info.md` with architecture, file type, security mitigations, initial strings and symbols
 
 ### Wave B – Analysis
 
 After initial recon, in parallel where possible:
 
-- MUST USE `vulnerability-hunter` to identify potential vulnerabilities
-- USE `reverse-engineer` for complex code understanding
-- USE `crypto-analyzer` if encryption/obfuscation is present
-- USE `malware-analyzer` for malware samples (instead of above)
+**Primary agents:**
+- `vulnerability-hunter` (**CORE**) — Identify potential vulnerabilities
+- `reverse-engineer` (**CORE**) — For complex code understanding
+- `crypto-analyzer` (if encryption/obfuscation is present)
+- `malware-analyzer` (for malware samples instead of above)
 
-Produces:
+**Produces:**
 - `context/vulnerability-analysis.md`
 - `context/reverse-engineering.md`
 - `context/crypto-analysis.md`
@@ -245,12 +147,13 @@ Produces:
 
 Once vulnerabilities are identified:
 
-- USE `gadget-finder` if ROP is needed
-- USE `payload-crafter` for custom shellcode
-- MUST USE `exploit-developer` to create working exploit
-- USE `exploit-tester` to validate
+**Primary agents:**
+- `gadget-finder` (if ROP is needed)
+- `payload-crafter` (for custom shellcode)
+- `exploit-developer` (**CORE**) — Create working exploit
+- `exploit-tester` (**CORE**) — Validate exploit works
 
-Produces:
+**Produces:**
 - `context/gadgets.md`
 - `exploit.py`
 - `find.py` (if needed)
@@ -259,9 +162,27 @@ Produces:
 
 After successful exploitation:
 
-- MUST USE `writeup-writer` to create documentation
-- Creates `README.md` and `REPORT.md`
-- Updates `STATUS.md` with final status
+**Primary agents:**
+- `writeup-writer` (**CORE**)
+
+**Produces:**
+- `REPORT.md`
+- `STATUS.md` updated with final status
+
+## Skills Usage
+
+When performing any task, USE the appropriate skills:
+
+- `exploitation-techniques` for BOF, ROP, format string, canary, GOT patterns
+- `vm-interpreter` for custom interpreter/VM exploitation
+- `logic-vulnerabilities` for FD abuse and TOCTOU race conditions
+- `side-channels` for timing attacks and oracles
+- `binary-analysis` for analysis tools and techniques
+- `malware-patterns` for malware behaviors and IOCs
+- `tool-usage` for command reference (pwntools, GDB, etc.)
+- `reporting-standards` for documentation format
+
+Reference skills directly rather than duplicating their content.
 
 ## Multi-Problem Orchestration
 
@@ -321,226 +242,7 @@ IF some are blocked:
 - Failed attempts (document what didn't work!)
 - Any breakthrough
 
-### Restartability Protocol
-
-When resuming work:
-
-1. **Read root STATUS.md first**
-   - What's solved? Skip those
-   - What's in progress? Read their STATUS.md
-   - What's blocked? Note blockers
-
-2. **For each in-progress problem, read its STATUS.md**
-   - What phase is it in?
-   - What's already discovered?
-   - What failed and why?
-
-3. **Resume from last known good state**
-   - Don't re-do completed analysis
-   - Use discovered addresses/offsets
-   - Avoid repeating failed approaches
-
-4. **Spawn agents based on current state**
-   - Match agent to current phase
-   - Provide context from STATUS.md
-
-## Skills Usage
-
-When performing any task, USE the appropriate skills:
-
-- `exploitation-techniques` for BOF, ROP, format string, canary, GOT patterns
-- `vm-interpreter` for custom interpreter/VM exploitation
-- `logic-vulnerabilities` for FD abuse and TOCTOU race conditions
-- `side-channels` for timing attacks and oracles
-- `binary-analysis` for analysis tools and techniques
-- `malware-patterns` for malware behaviors and IOCs
-- `tool-usage` for command reference (pwntools, GDB, etc.)
-- `reporting-standards` for documentation format
-
-Reference skills directly rather than duplicating their content.
-
-## Priorities
-
-When recommendations conflict:
-
-1. Ethical boundaries (authorized testing only)
-2. Exploit correctness (it must actually work)
-3. Simplicity (match examples/ style if available)
-4. Documentation completeness
-5. Code elegance
-
-## Workflow (Quick Reference)
-
-### Phase 1: Reconnaissance
-
-1. **Identify the target type**
-   - Binary exploitation (ELF, PE)
-   - Malware analysis
-   - Web application
-   - Android/Mobile
-   - Crypto challenge
-
-2. **Gather information**
-   ```bash
-   file target
-   checksec target
-   strings target | head -50
-   readelf -h target
-   objdump -M intel -d target > target.asm
-   ```
-
-3. **Document initial findings in STATUS.md**
-
-### Phase 2: Analysis
-
-For **binary exploitation**:
-- USE `codebase-analyzer` agent to understand binary structure
-- USE pyghidra-mcp for decompilation when available
-- Identify vulnerability class (see Pattern Library below)
-- Map security mitigations (ASLR, NX, canary, PIE, RELRO)
-
-For **malware analysis**:
-- USE read-only analysis first (static)
-- USE LD_PRELOAD hooks for runtime interception
-- Document encryption/obfuscation layers
-- Map C2 communication patterns
-
-### Phase 3: Exploitation/Documentation
-
-- USE `implementation-engineer` for exploit development
-- USE `tdd-test-writer` for exploit validation scripts
-- Keep exploits linear and simple (match examples/ style if available)
-- Document in README.md (simple) and REPORT.md (technical)
-
-### Phase 4: Verification
-
-- USE `test-runner-validator` to verify exploits work
-- Test locally, then against remote (if CTF server)
-- Document any environment-specific requirements
-
-## Exploit Development Style
-
-Based on pwntools conventions:
-
-```python
-#!/usr/bin/env python3
-from pwn import *
-
-context.arch = 'amd64'  # or 'i386'
-
-EXECUTABLE = "./target"
-HOST = "localhost"
-PORT = 9999
-
-# CRITICAL: Stack consistency
-ARGV0 = "/pwn"  # Fixed argv[0] = consistent stack addresses
-ENV = {}        # Empty environment
-
-def conn():
-    if args.REMOTE:
-        return remote(HOST, PORT)
-    elif args.GDB:
-        return gdb.debug([EXECUTABLE], env=ENV, argv=[ARGV0], gdbscript='b *main\nc')
-    else:
-        return process([EXECUTABLE], env=ENV, argv=[ARGV0])
-
-p = conn()
-
-# ELF setup
-elf = ELF(EXECUTABLE)
-#libc = ELF("./libc.so.6")
-
-# Key addresses
-buffer_size = 0x40
-ret_offset = buffer_size + 8  # 64-bit: +8, 32-bit: +4
-
-# Gadgets (from ropper or pwntools)
-pop_rdi = 0x401234
-ret = 0x40101a  # for stack alignment
-
-# Payload construction
-payload = b'A' * ret_offset
-payload += p64(pop_rdi)
-payload += p64(next(elf.search(b'/bin/sh')))
-payload += p64(elf.symbols['system'])
-
-# Send and interact
-p.sendline(payload)
-p.interactive()
-```
-
-**Style rules:**
-- Linear flow, minimal functions
-- Lowercase_with_underscores for variables
-- Print addresses for debugging: `print(f"libc_base: {hex(libc_base)}")`
-- Comment out alternative connection methods
-- Keep it simple - match examples/ structure if available
-
-## Pattern Library Reference
-
-Exploitation patterns are organized into skills:
-
-| Skill | Patterns |
-|-------|----------|
-| `exploitation-techniques` | BOF, canary bypass, GOT overwrite, format string, ret2libc, ROP, heap |
-| `vm-interpreter` | Interpreter/VM arbitrary R/W exploitation |
-| `logic-vulnerabilities` | FD abuse, TOCTOU race conditions |
-| `side-channels` | Timing attacks, oracles |
-
-USE the appropriate skill when developing exploits.
-
-## Tool Reference
-
-### Static Analysis
-```bash
-# ELF analysis
-file target
-checksec target
-readelf -h target
-readelf -S target
-objdump -M intel -d target > target.asm
-
-# String extraction
-strings target
-strings -a -t x target  # with offsets
-
-# Binary diffing
-diff <(xxd file1) <(xxd file2)
-```
-
-### Dynamic Analysis
-```bash
-# Tracing
-strace -f ./target
-ltrace ./target
-
-# GDB with pwndbg
-gdb ./target
-> checksec
-> vmmap
-> telescope $rsp
-> x/20gx $rsp
-
-# LD_PRELOAD hooks
-gcc -shared -fPIC -o hook.so hook.c -ldl
-LD_PRELOAD=./hook.so ./target
-```
-
-### Exploitation Tools
-```bash
-# Gadget finding
-ropper --file target --search "pop rdi"
-ROPgadget --binary target
-
-# Pattern generation
-pwn cyclic 200
-pwn cyclic -l 0x61616168
-
-# Shellcode
-pwn shellcraft amd64.linux.sh
-```
-
-### MCP Integration
+## MCP Integration
 
 When pyghidra-mcp is configured:
 ```json
@@ -561,130 +263,6 @@ Use MCP tools for:
 - `mcp__pyghidra-mcp__search_strings` - Find strings in binary
 - `mcp__pyghidra-mcp__list_cross_references` - Find xrefs
 
-## Security Mitigation Quick Reference
-
-| Mitigation | Check | Bypass Approach |
-|------------|-------|-----------------|
-| **NX/DEP** | `checksec` shows NX enabled | ROP, ret2libc |
-| **Stack Canary** | Canary found | Leak canary, brute force (fork), off-by-one |
-| **ASLR** | System-wide | Leak addresses, partial overwrite |
-| **PIE** | PIE enabled | Leak code base, partial overwrite |
-| **Full RELRO** | RELRO: Full | Can't overwrite GOT, target other pointers |
-| **Partial RELRO** | RELRO: Partial | GOT is writable |
-
-## Standard Artifact Schema
-
-### Required Artifacts
-
-All security work must produce artifacts in a consistent format:
-
-**`REPORT.md`** (combined technical report and writeup):
-```markdown
-# Challenge: [NAME]
-
-## Overview
-High-level description suitable for someone learning.
-
-## Summary
-One paragraph technical summary of the vulnerability and exploitation approach.
-
-## Analysis
-
-### Binary Properties
-| Property | Value |
-|----------|-------|
-| Architecture | x86-64 / i386 |
-| NX | Enabled / Disabled |
-| Stack Canary | Found / Not found |
-| PIE | Enabled / Disabled |
-| RELRO | Full / Partial / None |
-
-### Vulnerability
-- Type: (BOF, format string, heap, logic, etc.)
-- Location: (function name, offset)
-- Trigger: (how to reach vulnerable code)
-
-### Key Addresses
-| Symbol | Address | Purpose |
-|--------|---------|---------|
-| main | 0x... | Entry point |
-| win | 0x... | Target function |
-| pop rdi | 0x... | ROP gadget |
-
-## Exploitation
-
-### Approach
-1. First, I examined the binary...
-2. I noticed that...
-3. To exploit this...
-
-### Payload Structure
-[description of payload layout]
-
-### Challenges Encountered
-- Any obstacles and how they were overcome
-
-## Exploit Code
-See exploit.py
-
-## Flag
-flag{...}
-
-## Key Concepts
-Brief explanation of techniques used - helpful for learning.
-
-## Mitigations
-How this vulnerability could be prevented.
-
-## Lessons Learned
-- What made this interesting
-- What would you do differently
-
-## Tools Used
-- pwntools, GDB/pwndbg, ropper, etc.
-
-## References
-- Links used
-```
-
-**`STATUS.md`** (progress tracking):
-```markdown
-## Timeline
-- Started: YYYY-MM-DD HH:MM
-- Completed: YYYY-MM-DD HH:MM (or "-")
-
-## Phase
-- [x] Reconnaissance
-- [x] Analysis
-- [ ] Exploitation
-- [ ] Documentation
-
-## Key Findings
-- Buffer: 64 bytes
-- Offset: 72
-- Protections: NX, no canary, no PIE
-
-## What's Working
-- Libc leak successful
-
-## What's NOT Working
-- ROP chain crashes (stack alignment?)
-
-## Next Steps
-1. Add ret gadget
-2. Test full chain
-```
-
-### Artifact Naming Convention
-
-| Artifact | Filename | Location |
-|----------|----------|----------|
-| Progress tracking | `STATUS.md` | root or problem dir |
-| Technical report & writeup | `REPORT.md` | problem dir |
-| Exploit code | `exploit.py` | problem dir |
-| Address finder | `find.py` | problem dir (if needed) |
-| Disassembly | `target.asm` | problem dir |
-
 ## Deliverables Checklist
 
 For CTF challenges:
@@ -701,90 +279,3 @@ For malware analysis:
 - [ ] Extracted artifacts in `extracted/`
 - [ ] Analysis scripts in `scripts/`
 - [ ] Key findings documented with addresses/offsets
-
-## Common Pitfalls
-
-1. **Stack alignment** - x86-64 requires 16-byte alignment before calls
-2. **Virtual vs file offsets** - ELF loading changes addresses
-3. **Remote vs local stack mismatch** - See critical section below
-4. **Endianness** - x86 is little-endian
-5. **Null bytes** - Many functions terminate on \x00
-6. **Bad characters** - Some inputs filter certain bytes
-7. **SUID binaries** - Can't use ptrace, need alternative debugging
-
-### CRITICAL: Stack Consistency for Debugging
-
-**This is the #1 cause of "my addresses don't match GDB" issues.**
-
-When Linux starts a process, it pushes onto the stack (from high to low addresses):
-1. Environment variable strings
-2. Argument strings (including argv[0] - the program path)
-3. Pointers to the above
-
-Without fixing these, every run has different stack addresses - making debugging impossible.
-
-#### The Problem
-
-```
-Run 1:  ./target                    → argv[0] = "./target" (8 bytes)
-Run 2:  python3 exploit.py          → argv[0] = different
-GDB:    gdb ./target                → argv[0] = different again
-
-Result: Stack addresses are DIFFERENT every time = can't debug reliably
-```
-
-Your shell also adds environment variables (PATH, HOME, TERM, etc.) to the stack.
-
-#### The Solution
-
-**ALWAYS use a fixed argv[0] and empty environment:**
-
-```python
-# Fixed argv[0] - use any short consistent value
-ARGV0 = "/pwn"
-ENV = {}  # Empty environment
-
-def conn():
-    if args.REMOTE:
-        return remote(HOST, PORT)
-    elif args.GDB:
-        return gdb.debug([EXECUTABLE], env=ENV, argv=[ARGV0], gdbscript='...')
-    else:
-        return process([EXECUTABLE], env=ENV, argv=[ARGV0])
-```
-
-#### Why This Works
-
-- `env={}` removes all shell environment variables from the stack
-- `argv=[ARGV0]` spoofs a fixed program name regardless of how you invoke
-- Result: Stack addresses are **IDENTICAL** between normal run and GDB debug
-
-#### Remote Considerations
-
-| Exploit Type | Does stack matter for remote? |
-|--------------|------------------------------|
-| ROP / ret2win (PIE off) | No - code addresses are fixed |
-| ret2libc | No - libc addresses from leak |
-| Stack buffer / shellcode | Yes - need leak OR match remote argv[0] |
-
-If you need absolute stack addresses for remote:
-- **Best**: Leak stack address from the binary
-- **Alternative**: Match remote's argv[0] (check Dockerfile for binary path)
-
-## Resources
-
-### General
-- https://ctftime.org/writeups
-- https://github.com/shellphish/how2heap
-
-### ROP
-- http://crypto.stanford.edu/~blynn/rop/
-- https://hovav.net/ucsd/dist/blackhat08.pdf
-
-### Format String
-- https://cs155.stanford.edu/papers/formatstring-1.2.pdf
-- http://phrack.org/issues/59/7.html
-
-### Stack Protection Bypass
-- http://phrack.org/issues/56/5.html
-- https://www.coresecurity.com/sites/default/private-files/publications/2016/05/StackguardPaper.pdf

@@ -1,60 +1,21 @@
 # AI Agent Development Guide
 
-> **For general AI coding assistants.** This is a simplified guide for tools like Cursor, Copilot, Codeium, etc. If you're using **Claude Code**, see **[CLAUDE.md](./CLAUDE.md)** instead for advanced features (subagents, skills, parallel orchestration).
-
-## Portability Notes
-
-This guide is designed to work with any AI coding assistant. Tool-specific translations:
-
-| Generic Operation | Claude Code | Cursor/Copilot | Codeium | Other |
-|-------------------|-------------|----------------|---------|-------|
-| Read file | `Read` tool | Built-in | Built-in | Use your file read capability |
-| Search files | `Glob` tool | Built-in | Built-in | Use file search |
-| Search content | `Grep` tool | Built-in | Built-in | Use content search |
-| Edit file | `Edit` tool | Built-in | Built-in | Use your edit capability |
-| Run command | `Bash` tool | Terminal | Terminal | Use shell access |
-
-**If you're not Claude Code:**
-- Ignore references to "subagents" and "skills" - these are Claude-specific
-- Follow the wave model using your native capabilities
-- Write artifacts to the file locations specified
-- Use your tool's equivalent for file operations
-
----
-
-## Quickstart
-
-**If you're a human working with an AI assistant:**
-1. Use `AGENTS.md` (this file) as the main reference for your AI tool
-2. Follow the Wave model: Wave A → B → C → D → E
-3. Always update `STATUS.md` before switching tasks or ending a session
-
-**If you're a generic AI coding assistant:**
-1. Read `STATUS.md` first if it exists
-2. Follow the wave sequence for non-trivial changes
-3. Write artifacts to `context/*.md` for analysis, root for design docs
-4. Update `STATUS.md` after each major step
-
-**Quick decision:**
-- New repo? → Wave A (read code first)
-- Small fix? → Skip to Wave D, update STATUS.md when done
-- Multi-file feature? → Full wave sequence
-
----
-
-This document provides guidelines for AI coding assistants working in this codebase.
-
 ## Project Structure
 
 ```
 project/
 ├── STATUS.md           # Progress tracking (for restartability)
 ├── context/            # Context artifacts
-│   └── repo-map.md
+│   ├── repo-map.md
+│   ├── dependency-graph.md
+│   ├── test-coverage-baseline.md
+│   └── perf-baseline.md
 ├── spec.md             # Requirements specification
 ├── architecture.md     # System design
 ├── api-design.md       # API/interface design
 ├── test-plan.md        # Test strategy
+├── security-requirements.md  # Security controls (if needed)
+├── design-validation.md      # Validation results
 └── src/                # Source code
 ```
 
@@ -62,54 +23,161 @@ project/
 
 Use this to decide where to start:
 
-| Scenario | Start Wave | Skip? |
-|----------|------------|-------|
-| New repo or unfamiliar codebase | A | No skips |
-| Major feature (multi-file) | A | No skips |
-| Moderate feature (known patterns) | B | Skip A if context exists |
-| Small bugfix | D | Skip A-C |
-| One-liner or doc update | D | Shortcut path |
+| Scenario | Start Wave | Skip? | Notes |
+|----------|------------|-------|-------|
+| New repo or unfamiliar codebase | A | No skips | Must build context first |
+| Major feature (multi-file, new patterns) | A | No skips | Full wave sequence |
+| Moderate feature (known patterns) | B | Skip A if context exists | Use existing `context/*.md` |
+| Small bugfix in familiar code | D | Skip A-C | Direct implementation |
+| One-liner fix or doc update | D | Skip A-C | Shortcut path (see below) |
+| Refactoring existing code | A | No skips | Need test baseline first |
+| Performance-sensitive work | A | No skips | Need perf baseline |
 
 **Decision tree:**
-1. New repo or significant structure change? → **Wave A**
-2. Need new architecture/API design? → **Wave B**
-3. Simple, low-risk change? → **Wave D**
+1. Is this a new repo or has structure changed significantly? → **Wave A**
+2. Is `context/repo-map.md` current and sufficient? → If no, **Wave A**
+3. Does this require new architecture or API design? → **Wave B**
+4. Is this a simple, low-risk change? → **Wave D** (Shortcut Path)
+
+## Global Norms
+
+- Be truthful and avoid fabricating APIs, tools, or behavior.
+- Respect the wave model: Wave A → Wave B → Wave C → Wave D → Wave E
+- Respect security and safety constraints.
 
 ## Development Workflow (Wave Model)
 
 Follow this sequential workflow for non-trivial changes:
 
 ### Wave A: Context Gathering
+
+When starting significant work (new feature, major refactor):
+
+**Activities:**
 - Read existing code before making changes
 - Identify patterns, conventions, and dependencies
-- Check for existing tests and documentation
-- **Update STATUS.md** with initial findings
+- Map inter-module dependencies (if complex)
+- Check test coverage metrics (if refactoring or coverage unknown)
+- Establish performance baseline (if performance-sensitive work)
+- Research unfamiliar libraries/APIs/patterns
 
-### Wave B: Design (for significant changes)
-- Create `spec.md` with requirements and acceptance criteria
-- Create `architecture.md` for component design
-- Create `api-design.md` for interface definitions
-- Create `test-plan.md` with test cases
-- **Update STATUS.md** with design progress
+**Required artifacts:**
+- `context/repo-map.md` — Repository structure and patterns
+- `context/dependency-graph.md` — Inter-module dependencies (if complex)
+- `context/test-coverage-baseline.md` — Test coverage metrics (if needed)
+- `context/perf-baseline.md` — Performance baseline (if needed)
+- `context/research.md` — Library/pattern research findings (if needed)
+- `STATUS.md` updated with summary and known risks
+
+**Wave A complete when:**
+- [ ] `context/repo-map.md` exists and is current
+- [ ] Dependencies are understood (documented or trivial)
+- [ ] Test coverage is known (documented or acceptable)
+- [ ] `STATUS.md` reflects findings and risks
+
+### Wave B: Design & Analysis
+
+When requirements or tickets are ambiguous or non-trivial:
+
+**Activities:**
+- Synthesize requirements and acceptance criteria
+- Design architecture and component structure
+- Define API/interface specifications (if APIs involved)
+- Plan test strategy and cases
+- Identify security requirements (if auth/data/external exposure)
+- Profile performance concerns (if performance matters)
+
+**Required artifacts:**
+- `spec.md` — Requirements and acceptance criteria
+- `architecture.md` — Component design and data flow
+- `api-design.md` — Interface specifications (if APIs involved)
+- `test-plan.md` — Test strategy and cases
+- `security-requirements.md` — Security controls (if security-sensitive)
+- `STATUS.md` updated with design progress
+
+**Wave B complete when:**
+- [ ] `spec.md` has clear requirements and acceptance criteria
+- [ ] `architecture.md` documents components and data flow
+- [ ] `test-plan.md` covers happy path, edge cases, failures
+- [ ] Security requirements documented (if applicable)
+- [ ] `STATUS.md` reflects design decisions
 
 ### Wave C: Design Validation
+
+Before writing significant new code:
+
+**Activities:**
 - Cross-check spec vs architecture vs test plan
 - Ensure all requirements are covered
 - Identify gaps before implementation
 
+**Required artifacts:**
+- `design-validation.md` — Cross-check results
+
+**Validates:**
+- `spec.md` ↔ `architecture.md` consistency
+- `architecture.md` ↔ `api-design.md` consistency
+- `test-plan.md` covers all requirements
+- `security-requirements.md` addressed in design (if present)
+
+**Wave C complete when:**
+- [ ] `design-validation.md` shows no critical issues
+- [ ] All design artifacts are internally consistent
+- [ ] If issues found: resolved and re-validated
+
+**If validation fails:** Re-run relevant Wave B activities, then re-validate.
+
 ### Wave D: Implementation
+
+For actual feature or bugfix implementation:
+
+**Activities:**
 - Write tests first (TDD when appropriate)
 - Implement in small, focused commits
 - Follow existing code patterns and conventions
 - Update documentation alongside code changes
-- **Update STATUS.md** with implementation progress
 
-### Wave E: Review & Verification
+**Required artifacts:**
+- Source code changes (in appropriate directories)
+- Test implementations (mirroring source structure)
+- Updated documentation (if behavior changed)
+- `STATUS.md` updated with implementation progress
+
+**Wave D rules:**
+- Keep changes scoped to specific directories/file types to avoid conflicts
+- Implement tests defined in `test-plan.md`
+- Update docs in parallel with code changes
+
+**Wave D complete when:**
+- [ ] All specified functionality implemented
+- [ ] Tests written for new code
+- [ ] Documentation updated
+- [ ] `STATUS.md` reflects implementation status
+
+### Wave E: Review & PR Packaging
+
+Once implementation and tests are in place:
+
+**Activities:**
 - Run all tests and ensure they pass
 - Check for security issues (input validation, auth, secrets)
 - Review for performance concerns
 - Verify documentation is accurate
-- **Update STATUS.md** to mark task complete
+- Create atomic commits
+- Prepare PR description
+
+**Required artifacts:**
+- All tests passing
+- `STATUS.md` updated to mark task complete
+- PR description with risks, testing notes, follow-up actions
+
+**Wave E complete when:**
+- [ ] All tests pass
+- [ ] No critical security issues
+- [ ] Code style reviewed
+- [ ] Commits are atomic and well-described
+- [ ] PR is ready for review
+- [ ] `STATUS.md` marked complete
 
 ## Restartability (STATUS.md)
 
@@ -143,10 +211,26 @@ Follow this sequential workflow for non-trivial changes:
 ```
 
 ### When Resuming Work
-1. Read STATUS.md to understand current state
-2. Check artifact status for stale/missing docs
-3. Review blocked tasks for resolution
-4. Continue from last known good state
+1. **Read STATUS.md first**
+   - What tasks are done? Skip those
+   - What's in progress? Resume from last state
+   - What's blocked? Note blockers and skip
+
+2. **Check artifact status**
+   - Which context artifacts exist and are current?
+   - Which design artifacts are complete vs draft?
+   - What's missing that needs to be created?
+
+3. **Resume from last known good state**
+   - Don't re-run completed waves
+   - Use existing artifacts as inputs
+   - Continue from the current wave for each task
+
+4. **Update STATUS.md frequently**
+   - After completing any wave
+   - After creating/updating artifacts
+   - After any blocker or breakthrough
+   - At session start and end
 
 ## Coding Standards
 
@@ -205,11 +289,37 @@ Example: `feat(auth): add MFA to login flow`
 ## Priority Order
 
 When recommendations conflict:
-1. Security and safety
+
+1. Security and safety (including regulatory/compliance)
 2. Correctness and data integrity
 3. Performance and reliability
 4. Maintainability and readability
-5. Style preferences
+5. Minor style preferences
+
+## Shortcut Path: Trivial Changes
+
+For very small, low-risk changes (one-liner bugfix, doc comment, simple refactor):
+
+1. **Skip Waves A–C entirely**
+2. Edit the file directly
+3. Run tests relevant to the change
+4. Update `STATUS.md` with:
+   - What changed
+   - Tests run
+   - Any follow-up needed
+
+**Use shortcut path when:**
+- Change is < 50 lines in a single file
+- No architectural impact
+- No new dependencies
+- Tests are straightforward
+- You understand the surrounding code
+
+**Do NOT use shortcut path when:**
+- Refactoring code you haven't analyzed
+- Touching security-sensitive code
+- Change affects multiple components
+- Tests are missing or unclear
 
 ## Artifact Templates
 

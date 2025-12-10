@@ -1,50 +1,5 @@
 # Security Research & CTF Guide
 
-> **For general AI coding assistants.** This is a simplified guide for tools like Cursor, Copilot, Codeium, etc. If you're using **Claude Code**, see **[CLAUDE.md](./CLAUDE.md)** instead for advanced features (subagents, skills, parallel orchestration).
-
-## Portability Notes
-
-This guide is designed to work with any AI coding assistant. Tool-specific translations:
-
-| Generic Operation | Claude Code | Other Tools |
-|-------------------|-------------|-------------|
-| Read file | `Read` tool | Use your file read capability |
-| Search files | `Glob` tool | Use file search |
-| Search content | `Grep` tool | Use content search |
-| Edit file | `Edit` tool | Use your edit capability |
-| Run command | `Bash` tool | Use shell/terminal access |
-| Run Python | `Bash` with `python3` | Use your Python execution |
-
-**If you're not Claude Code:**
-- Ignore references to "subagents" and "skills" - these are Claude-specific
-- Follow the wave model using your native capabilities
-- Write artifacts to the file locations specified (`STATUS.md`, `REPORT.md`, etc.)
-- Use `pwntools` for exploit development regardless of AI tool
-- The exploitation patterns and techniques are universal
-
----
-
-## Quickstart
-
-**If you're a human working with an AI assistant:**
-1. Confirm this is authorized testing (CTF, lab, or explicit permission)
-2. Use `AGENTS.md` (this file) as the main reference
-3. Follow the Wave model: Recon → Analysis → Exploitation → Documentation
-4. Always update `STATUS.md` with findings and progress
-
-**If you're a generic AI coding assistant:**
-1. **Verify authorization first** - ask user to confirm CTF/lab context if unclear
-2. Read `STATUS.md` first if it exists
-3. Follow the wave sequence for each challenge
-4. Write findings to `STATUS.md`, final docs to `REPORT.md`
-
-**Quick decision:**
-- New binary? → Wave A (file, checksec, strings baseline)
-- Simple ret2win? → Skip gadget analysis, go straight to exploit
-- Unknown protections? → Full wave sequence required
-
----
-
 ## Authorization Gate
 
 **Before doing any exploit development, ALWAYS:**
@@ -81,43 +36,70 @@ Guidelines for AI coding assistants working on security research, CTF challenges
 
 Use this to decide where to start:
 
-| Scenario | Start Wave | Skip? |
-|----------|------------|-------|
-| Unknown binary | A | No skips |
-| Simple ret2win | A | Skip gadget analysis |
-| NX enabled, need ROP | A | No skips |
-| Complex protections | A | No skips |
+| Scenario | Start Wave | Skip? | Notes |
+|----------|------------|-------|-------|
+| Unknown binary | A | No skips | Always run checksec/file/strings first |
+| Simple ret2win (obvious win function) | A | Skip gadget analysis | Direct to exploit after recon |
+| NX enabled, need ROP | A | No skips | Full wave with gadget analysis |
+| Complex protections (PIE+Canary+RELRO) | A | No skips | Full wave, may need multiple passes |
+| Format string vulnerability | A | Skip payload crafting | Format string has its own patterns |
+| Heap exploitation | A | No skips | Full wave with heap-specific analysis |
+| Multi-problem lab | A | No skips | Use root STATUS.md for overview |
 
 **Decision tree:**
-1. Have you run `checksec` and `file`? → If no, **Wave A**
-2. Obvious `win()` function? → Try ret2win first
-3. Complex protections? → Full wave sequence
+1. Have you run `checksec` and `file` on this binary? → If no, **Wave A**
+2. Is there an obvious `win()` or `get_flag()` function? → Try simple ret2win first
+3. Are there complex protections (PIE, full RELRO, canary)? → Full wave sequence
+4. Is the vulnerability class unclear? → **Wave B** analysis required
 
 ## Exploit Strategy Ladder
 
 Try strategies in order of simplicity:
 
-1. **Trivial wins first:** Look for `win()`, `get_flag()` → simple ret2win
-2. **Libc leakable?** → ret2libc or `system("/bin/sh")`
-3. **Control flow constrained?** → ROP chain with gadget-finder
-4. **Exploit failing?** → Re-analyze, update STATUS.md with what didn't work
+1. **Trivial wins first:**
+   - Look for `win()`, `get_flag()`, `shell()` functions
+   - Overwritable return address without canary, PIE disabled?
+   - → Use simple ret2win before anything complex
 
-**Rule:** Simplest working exploit wins.
+2. **If no direct win but libc is leakable:**
+   - → Prefer `ret2libc` or `system("/bin/sh")` over full ROP chains
+   - Leak libc base via puts/printf GOT
+
+3. **If control flow is constrained:**
+   - → Use gadget analysis for ROP or SROP chains
+   - Check for one_gadget shortcuts in libc
+
+4. **If protections are unclear or exploit fails:**
+   - → Re-analyze the binary
+   - → Update `STATUS.md` with what didn't work and why
+   - → Try alternative approach
+
+**Golden rule:** Simplest working exploit wins. Don't build a 50-gadget ROP chain when ret2win would work.
+
+## Global Norms
+
+- Be truthful - don't fabricate addresses, offsets, or exploit behavior
+- Respect the wave model: Wave A → Wave B → Wave C → Wave D
+- Respect ethical constraints from the guidelines above
+- Keep exploits simple and linear (match examples/ style if available)
 
 ## Workflow (Wave Model)
 
 Follow this sequential workflow for each challenge:
 
 ### Wave A: Reconnaissance
+
 ```bash
 file target                    # File type
 checksec target                # Security mitigations
 strings target | head -50      # Interesting strings
+readelf -h target              # ELF header info
 objdump -M intel -d target > target.asm
 ```
 **Output**: Initial findings in STATUS.md
 
 ### Wave B: Analysis
+
 Identify vulnerability class:
 - Buffer overflow (no bounds checking)
 - Format string (user input as format)
@@ -130,7 +112,7 @@ Check mitigations and plan bypass:
 | Mitigation | Bypass |
 |------------|--------|
 | NX enabled | ROP, ret2libc |
-| Canary | Leak it, brute force, off-by-one |
+| Canary | Leak it, brute force (fork server), off-by-one |
 | ASLR | Leak addresses |
 | PIE | Leak code base |
 | Full RELRO | Can't use GOT overwrites |
@@ -138,6 +120,7 @@ Check mitigations and plan bypass:
 **Output**: Vulnerability identified, bypass strategy in STATUS.md
 
 ### Wave C: Exploitation
+
 - Keep it simple and linear
 - Use pwntools library
 - Test locally first, then remote
@@ -146,8 +129,8 @@ Check mitigations and plan bypass:
 **Output**: Working `exploit.py`
 
 ### Wave D: Documentation
-- README.md (simple explanation - 10th grade level)
-- REPORT.md (technical details with addresses)
+
+- REPORT.md (combined technical writeup and explanation)
 - Update STATUS.md to mark complete with end time
 
 **Output**: Complete documentation, STATUS.md marked solved
@@ -158,24 +141,55 @@ Check mitigations and plan bypass:
 #!/usr/bin/env python3
 from pwn import *
 
-context.arch = 'amd64'
+context.arch = 'amd64'  # or 'i386'
 
-# Connection
-p = process("./target")
-#p = remote("host", PORT)
+EXECUTABLE = "./target"
+HOST = "localhost"
+PORT = 9999
 
-# Setup
-elf = ELF("./target")
-offset = 72  # bytes to return address
+# CRITICAL: Stack consistency
+ARGV0 = "/pwn"  # Fixed argv[0] = consistent stack addresses
+ENV = {}        # Empty environment
 
-# Payload
-payload = b'A' * offset
-payload += p64(elf.symbols['win'])  # or ROP chain
+def conn():
+    if args.REMOTE:
+        return remote(HOST, PORT)
+    elif args.GDB:
+        return gdb.debug([EXECUTABLE], env=ENV, argv=[ARGV0], gdbscript='b *main\nc')
+    else:
+        return process([EXECUTABLE], env=ENV, argv=[ARGV0])
 
-# Send
+p = conn()
+
+# ELF setup
+elf = ELF(EXECUTABLE)
+#libc = ELF("./libc.so.6")
+
+# Key addresses
+buffer_size = 0x40
+ret_offset = buffer_size + 8  # 64-bit: +8, 32-bit: +4
+
+# Gadgets (from ropper or pwntools)
+pop_rdi = 0x401234
+ret = 0x40101a  # for stack alignment
+
+# Payload construction
+payload = b'A' * ret_offset
+payload += p64(pop_rdi)
+payload += p64(next(elf.search(b'/bin/sh')))
+payload += p64(elf.symbols['system'])
+
+# Send and interact
 p.sendline(payload)
 p.interactive()
 ```
+
+**Style rules:**
+- Linear flow, minimal functions
+- Lowercase_with_underscores for variables
+- Print addresses for debugging: `print(f"libc_base: {hex(libc_base)}")`
+- Comment out alternative connection methods
+- Keep it simple - match examples/ structure if available
 
 ## Common Exploitation Patterns
 
@@ -237,7 +251,6 @@ challenge/
 ├── target.asm      # Disassembly
 ├── exploit.py      # Working exploit
 ├── find.py         # Address finder (if needed)
-├── README.md       # Simple explanation
 └── REPORT.md       # Technical writeup
 ```
 
@@ -249,7 +262,7 @@ lab-name/
 │   ├── STATUS.md       # Detailed tracking for this problem
 │   ├── target
 │   ├── exploit.py
-│   └── README.md
+│   └── REPORT.md
 ├── problem2/
 │   └── ...
 └── problemN/
@@ -306,64 +319,145 @@ Track detailed progress for each problem:
 3. Review failed attempts to avoid repeating them
 4. Continue from last known good state
 
-## Tool Commands
+## CRITICAL: Stack Consistency for Debugging
 
-### GDB/pwndbg
+**This is the #1 cause of "my addresses don't match GDB" issues.**
+
+When Linux starts a process, it pushes onto the stack (from high to low addresses):
+1. Environment variable strings
+2. Argument strings (including argv[0] - the program path)
+3. Pointers to the above
+
+Without fixing these, every run has different stack addresses - making debugging impossible.
+
+### The Problem
+
 ```
-checksec              # Show mitigations
-vmmap                 # Memory map
-telescope $rsp 20     # Stack contents
-x/20gx $rsp           # Raw stack
-cyclic 200            # Generate pattern
-cyclic -l 0x61616168  # Find offset
+Run 1:  ./target                    → argv[0] = "./target" (8 bytes)
+Run 2:  python3 exploit.py          → argv[0] = different
+GDB:    gdb ./target                → argv[0] = different again
+
+Result: Stack addresses are DIFFERENT every time = can't debug reliably
 ```
 
-### ropper
-```bash
-ropper --file target --search "pop rdi"
-ropper --file target --search "ret"
-```
+Your shell also adds environment variables (PATH, HOME, TERM, etc.) to the stack.
 
-### pwntools
+### The Solution
+
+**ALWAYS use a fixed argv[0] and empty environment:**
+
 ```python
-cyclic(200)                    # Pattern
-cyclic_find(0x61616168)        # Offset
-elf.symbols['main']            # Symbol address
-elf.got['puts']                # GOT entry
-elf.plt['puts']                # PLT entry
-next(elf.search(b'/bin/sh'))   # Find string
+# Fixed argv[0] - use any short consistent value
+ARGV0 = "/pwn"
+ENV = {}  # Empty environment
+
+def conn():
+    if args.REMOTE:
+        return remote(HOST, PORT)
+    elif args.GDB:
+        return gdb.debug([EXECUTABLE], env=ENV, argv=[ARGV0], gdbscript='...')
+    else:
+        return process([EXECUTABLE], env=ENV, argv=[ARGV0])
 ```
 
-## Security Check Quick Reference
+### Why This Works
 
-```bash
-checksec target
-# Output interpretation:
-# RELRO: Full/Partial/None     - GOT protection
-# Stack: Canary found/No canary - Stack protection
-# NX: NX enabled/disabled       - Executable stack
-# PIE: PIE enabled/No PIE       - Position independent
+- `env={}` removes all shell environment variables from the stack
+- `argv=[ARGV0]` spoofs a fixed program name regardless of how you invoke
+- Result: Stack addresses are **IDENTICAL** between normal run and GDB debug
+
+### Remote Considerations
+
+| Exploit Type | Does stack matter for remote? |
+|--------------|------------------------------|
+| ROP / ret2win (PIE off) | No - code addresses are fixed |
+| ret2libc | No - libc addresses from leak |
+| Stack buffer / shellcode | Yes - need leak OR match remote argv[0] |
+
+If you need absolute stack addresses for remote:
+- **Best**: Leak stack address from the binary
+- **Alternative**: Match remote's argv[0] (check Dockerfile for binary path)
+
+## Standard Artifact Schema
+
+### REPORT.md Template
+```markdown
+# Challenge: [NAME]
+
+## Overview
+High-level description suitable for someone learning.
+
+## Summary
+One paragraph technical summary of the vulnerability and exploitation approach.
+
+## Analysis
+
+### Binary Properties
+| Property | Value |
+|----------|-------|
+| Architecture | x86-64 / i386 |
+| NX | Enabled / Disabled |
+| Stack Canary | Found / Not found |
+| PIE | Enabled / Disabled |
+| RELRO | Full / Partial / None |
+
+### Vulnerability
+- Type: (BOF, format string, heap, logic, etc.)
+- Location: (function name, offset)
+- Trigger: (how to reach vulnerable code)
+
+### Key Addresses
+| Symbol | Address | Purpose |
+|--------|---------|---------|
+| main | 0x... | Entry point |
+| win | 0x... | Target function |
+| pop rdi | 0x... | ROP gadget |
+
+## Exploitation
+
+### Approach
+1. First, I examined the binary...
+2. I noticed that...
+3. To exploit this...
+
+### Payload Structure
+[description of payload layout]
+
+### Challenges Encountered
+- Any obstacles and how they were overcome
+
+## Exploit Code
+See exploit.py
+
+## Flag
+flag{...}
+
+## Key Concepts
+Brief explanation of techniques used - helpful for learning.
+
+## Mitigations
+How this vulnerability could be prevented.
+
+## Lessons Learned
+- What made this interesting
+- What would you do differently
+
+## Tools Used
+- pwntools, GDB/pwndbg, ropper, etc.
+
+## References
+- Links used
 ```
 
-## Debugging Tips
+## Priority Order
 
-1. **Local debugging**
-   ```python
-   p = process("./target")
-   gdb.attach(p, gdbscript="b *main+50")
-   ```
+When recommendations conflict:
 
-2. **Stack alignment** (x86-64)
-   - Add extra `ret` gadget before function calls
-   - Stack must be 16-byte aligned
-
-3. **Environment differences**
-   - Use `env={}` for clean environment
-   - Remote may have different stack layout
-
-4. **SUID binaries**
-   - Can't use ptrace/gdb directly
-   - Create symlink: `ln -s /path/to/target ./t`
+1. Ethical boundaries (authorized testing only)
+2. Exploit correctness (it must actually work)
+3. Simplicity (match examples/ style if available)
+4. Documentation completeness
+5. Code elegance
 
 ## Deliverables
 
@@ -374,19 +468,19 @@ For each challenge:
    - Match style of reference examples (if available)
    - Include commented alternatives
 
-2. **README.md** - Simple explanation
-   - What the vulnerability is
-   - How the exploit works
-   - Could a 10th grader understand it?
-
-3. **REPORT.md** - Technical details
+2. **REPORT.md** - Technical details
    - Key addresses found
    - Tools used
    - Exploitation technique
+   - Simple explanation for learners
 
-## Resources
+## Common Pitfalls
 
-- CTF writeups: https://ctftime.org/writeups
-- Heap exploitation: https://github.com/shellphish/how2heap
-- ROP: http://crypto.stanford.edu/~blynn/rop/
-- Format string: https://cs155.stanford.edu/papers/formatstring-1.2.pdf
+1. **Stack alignment** - x86-64 requires 16-byte alignment before calls
+2. **Virtual vs file offsets** - ELF loading changes addresses
+3. **Remote vs local stack mismatch** - See critical section above
+4. **Endianness** - x86 is little-endian
+5. **Null bytes** - Many functions terminate on \x00
+6. **Bad characters** - Some inputs filter certain bytes
+7. **SUID binaries** - Can't use ptrace, need alternative debugging
+
