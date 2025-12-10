@@ -183,54 +183,12 @@ Once implementation and tests are in place:
 
 **Always maintain STATUS.md** to enable picking up work after interruptions.
 
-### STATUS.md Structure
-```markdown
-# Development Status: [PROJECT NAME]
-**Last Updated**: [timestamp]
-**Tasks**: X completed / Y total
+**STATUS.md must include:**
+- Task overview table (task, status, current wave, notes)
+- Artifact status table (which exist, which are draft/complete/missing)
+- Session history (what was done, what's blocked)
 
-## Overview
-| Task | Status | Wave | Notes |
-|------|--------|------|-------|
-| Feature A | ✅ Done | E | PR merged |
-| Feature B | 🔄 In Progress | D | Writing tests |
-| Bug fix C | ⏳ Blocked | B | Need clarification |
-
-## Active Artifacts
-| Artifact | Status |
-|----------|--------|
-| spec.md | ✅ Approved |
-| architecture.md | 🔄 Draft |
-| test-plan.md | ❌ Missing |
-
-## Session History
-### [Date]
-- Completed: Feature A implementation
-- Progress: Feature B tests 50% done
-- Blocked: Bug fix C (need stakeholder input)
-```
-
-### When Resuming Work
-1. **Read STATUS.md first**
-   - What tasks are done? Skip those
-   - What's in progress? Resume from last state
-   - What's blocked? Note blockers and skip
-
-2. **Check artifact status**
-   - Which context artifacts exist and are current?
-   - Which design artifacts are complete vs draft?
-   - What's missing that needs to be created?
-
-3. **Resume from last known good state**
-   - Don't re-run completed waves
-   - Use existing artifacts as inputs
-   - Continue from the current wave for each task
-
-4. **Update STATUS.md frequently**
-   - After completing any wave
-   - After creating/updating artifacts
-   - After any blocker or breakthrough
-   - At session start and end
+When resuming: read STATUS.md first, skip completed work, resume from last good state, update frequently.
 
 ## Coding Standards
 
@@ -321,48 +279,12 @@ For very small, low-risk changes (one-liner bugfix, doc comment, simple refactor
 - Change affects multiple components
 - Tests are missing or unclear
 
-## Artifact Templates
+## Documentation Requirements
 
-When creating design documents, use these structures:
+**All design documents (spec.md, architecture.md, api-design.md) must use Mermaid diagrams** for visualizing:
+- Component relationships
+- Data flows
+- Sequence diagrams
+- State machines
 
-### spec.md
-- Problem Statement
-- Functional Requirements (numbered)
-- Non-Functional Requirements
-- Acceptance Criteria
-- Out of Scope
-- Dependencies & Risks
-
-### architecture.md
-- Overview
-- Components (with responsibilities)
-- Data Flow
-- Control Flow
-- Boundaries & Integrations
-- Trade-offs & Decisions
-
-### test-plan.md
-- Scope
-- Test Categories (unit, integration, e2e)
-- Test Cases (happy path, edge cases, failures)
-- Data & Fixtures
-- Exit Criteria
-
-## Quick Reference
-
-**Before writing code:**
-1. Read the relevant existing code
-2. Understand the patterns in use
-3. Check for existing tests
-
-**When implementing:**
-1. Write/update tests first
-2. Make small, focused changes
-3. Run tests frequently
-4. Commit logical chunks
-
-**Before committing:**
-1. All tests pass
-2. No security issues introduced
-3. Documentation updated if needed
-4. Commit message follows conventions
+Keep diagrams simple and focused. Prefer multiple small diagrams over one complex one.

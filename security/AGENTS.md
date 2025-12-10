@@ -89,13 +89,8 @@ Follow this sequential workflow for each challenge:
 
 ### Wave A: Reconnaissance
 
-```bash
-file target                    # File type
-checksec target                # Security mitigations
-strings target | head -50      # Interesting strings
-readelf -h target              # ELF header info
-objdump -M intel -d target > target.asm
-```
+Run recon tools (file, checksec, strings, disassembly). Save disassembly to `target.asm`.
+
 **Output**: Initial findings in STATUS.md
 
 ### Wave B: Analysis
@@ -273,51 +268,16 @@ lab-name/
 
 **Always maintain STATUS.md** to enable picking up work after interruptions.
 
-### Root STATUS.md (for multi-problem labs)
-Track all problems with start/completion times:
-```markdown
-| Problem | Status | Started | Completed | Difficulty | Notes |
-|---------|--------|---------|-----------|------------|-------|
-| prob1 | ✅ Solved | 2024-01-15 09:00 | 2024-01-15 11:30 | Easy | ret2win |
-| prob2 | 🔄 In Progress | 2024-01-15 12:00 | - | Medium | ROP needed |
-| prob3 | ❌ Not Started | - | - | Hard | PIE + RELRO |
-```
+**Root STATUS.md** (for multi-problem labs): Table with problem, status, start/end times, difficulty, notes.
 
-### Problem STATUS.md
-Track detailed progress for each problem:
-```markdown
-## Timeline
-- Started: 2024-01-15 12:00
-- Completed: -
+**Problem STATUS.md** must include:
+- Timeline (started/completed)
+- Current phase (recon/analysis/exploitation/documentation)
+- Key findings (buffer size, offsets, leaked values)
+- What's working vs what's not working
+- Next steps
 
-## Current Phase
-[x] Reconnaissance
-[x] Analysis
-[ ] Exploitation
-[ ] Documentation
-
-## Key Findings
-- Buffer size: 64 bytes
-- Offset to RIP: 72
-- Canary: leaked via format string
-
-## What's Working
-- Libc leak successful
-- Canary bypass working
-
-## What's Not Working
-- ROP chain crashes (stack alignment?)
-
-## Next Steps
-1. Add ret gadget for alignment
-2. Test full chain
-```
-
-### When Resuming Work
-1. Read STATUS.md to understand current state
-2. Check what's already discovered (addresses, offsets)
-3. Review failed attempts to avoid repeating them
-4. Continue from last known good state
+When resuming: read STATUS.md first, check what's discovered, review failed attempts, continue from last good state.
 
 ## CRITICAL: Stack Consistency for Debugging
 
@@ -378,76 +338,9 @@ If you need absolute stack addresses for remote:
 - **Best**: Leak stack address from the binary
 - **Alternative**: Match remote's argv[0] (check Dockerfile for binary path)
 
-## Standard Artifact Schema
+## REPORT.md Contents
 
-### REPORT.md Template
-```markdown
-# Challenge: [NAME]
-
-## Overview
-High-level description suitable for someone learning.
-
-## Summary
-One paragraph technical summary of the vulnerability and exploitation approach.
-
-## Analysis
-
-### Binary Properties
-| Property | Value |
-|----------|-------|
-| Architecture | x86-64 / i386 |
-| NX | Enabled / Disabled |
-| Stack Canary | Found / Not found |
-| PIE | Enabled / Disabled |
-| RELRO | Full / Partial / None |
-
-### Vulnerability
-- Type: (BOF, format string, heap, logic, etc.)
-- Location: (function name, offset)
-- Trigger: (how to reach vulnerable code)
-
-### Key Addresses
-| Symbol | Address | Purpose |
-|--------|---------|---------|
-| main | 0x... | Entry point |
-| win | 0x... | Target function |
-| pop rdi | 0x... | ROP gadget |
-
-## Exploitation
-
-### Approach
-1. First, I examined the binary...
-2. I noticed that...
-3. To exploit this...
-
-### Payload Structure
-[description of payload layout]
-
-### Challenges Encountered
-- Any obstacles and how they were overcome
-
-## Exploit Code
-See exploit.py
-
-## Flag
-flag{...}
-
-## Key Concepts
-Brief explanation of techniques used - helpful for learning.
-
-## Mitigations
-How this vulnerability could be prevented.
-
-## Lessons Learned
-- What made this interesting
-- What would you do differently
-
-## Tools Used
-- pwntools, GDB/pwndbg, ropper, etc.
-
-## References
-- Links used
-```
+Include: overview, binary properties table, vulnerability details, key addresses, exploitation approach, payload structure, flag, and lessons learned.
 
 ## Priority Order
 
@@ -459,28 +352,4 @@ When recommendations conflict:
 4. Documentation completeness
 5. Code elegance
 
-## Deliverables
-
-For each challenge:
-
-1. **exploit.py** - Working exploit
-   - Simple, linear code
-   - Match style of reference examples (if available)
-   - Include commented alternatives
-
-2. **REPORT.md** - Technical details
-   - Key addresses found
-   - Tools used
-   - Exploitation technique
-   - Simple explanation for learners
-
-## Common Pitfalls
-
-1. **Stack alignment** - x86-64 requires 16-byte alignment before calls
-2. **Virtual vs file offsets** - ELF loading changes addresses
-3. **Remote vs local stack mismatch** - See critical section above
-4. **Endianness** - x86 is little-endian
-5. **Null bytes** - Many functions terminate on \x00
-6. **Bad characters** - Some inputs filter certain bytes
-7. **SUID binaries** - Can't use ptrace, need alternative debugging
 
