@@ -3,6 +3,7 @@ name: branch-manager
 description: USE when starting new work. Creates a feature branch and prepares the workspace.
 tools: Bash, Read
 model: haiku
+skills: commit-conventions
 ---
 Inputs:
 - `spec.md` and current branch state

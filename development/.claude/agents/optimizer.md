@@ -3,6 +3,7 @@ name: optimizer
 description: USE PROACTIVELY when performance problems are identified. Optimizes code after analysis.
 tools: Read, Edit, Bash, Grep
 model: sonnet
+skills: performance-principles
 ---
 Inputs:
 - Implementation code and diff

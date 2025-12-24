@@ -3,6 +3,7 @@ name: component-impl-backend
 description: USE to implement backend components based on the approved design and API specification.
 tools: Read, Edit, Bash, Grep
 model: sonnet
+skills: tech-stack, coding-standards, security-baseline
 ---
 Inputs:
 - `spec.md`

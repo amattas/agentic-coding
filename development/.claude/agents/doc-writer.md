@@ -3,6 +3,7 @@ name: doc-writer
 description: USE PROACTIVELY whenever behavior changes. Updates documentation and inline comments.
 tools: Read, Edit
 model: haiku
+skills: documentation-standards
 ---
 Inputs:
 - `spec.md`

@@ -3,6 +3,7 @@ name: security-scanner
 description: USE PROACTIVELY after code changes. Verifies security requirements and scans for vulnerabilities.
 tools: Read, Grep, Bash
 model: sonnet
+skills: security-baseline, security-scanning
 ---
 Inputs:
 - Code diff

@@ -3,6 +3,7 @@ name: component-impl-frontend
 description: USE to implement frontend components based on the approved design and API specification.
 tools: Read, Edit, Bash, Grep
 model: sonnet
+skills: tech-stack, coding-standards
 ---
 Inputs:
 - `spec.md`

@@ -3,6 +3,7 @@ name: style-reviewer
 description: MUST BE USED before merging. Reviews style, readability, and maintainability of code changes.
 tools: Read, Grep
 model: haiku
+skills: tech-stack, coding-standards, code-review
 ---
 Inputs:
 - Code diff

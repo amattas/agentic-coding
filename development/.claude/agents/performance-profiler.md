@@ -3,6 +3,7 @@ name: performance-profiler
 description: USE when performance is a concern. Identifies potential performance risks during design.
 tools: Read, Grep
 model: sonnet
+skills: performance-principles
 ---
 Inputs:
 - `spec.md`

@@ -3,6 +3,7 @@ name: web-researcher
 description: USE before implementing unfamiliar patterns, APIs, or when choosing libraries.
 tools: Read, WebSearch, WebFetch, Glob, Grep
 model: sonnet
+skills: tech-stack
 ---
 
 Research documentation, libraries, and best practices before implementation.

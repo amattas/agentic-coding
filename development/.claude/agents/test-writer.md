@@ -3,6 +3,7 @@ name: test-writer
 description: MUST BE USED after api-design and implementation. Writes or updates tests based on the test plan.
 tools: Read, Edit, Bash, Grep
 model: sonnet
+skills: testing-guidelines, coding-standards, test-planning
 ---
 Inputs:
 - `spec.md`

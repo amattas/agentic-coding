@@ -1,0 +1,76 @@
+# Publish to NPM when pushed to release/latest
+# Supports both NPM_TOKEN and OIDC provenance
+
+name: Publish to NPM
+
+on:
+  push:
+    branches:
+      - "release/latest"
+
+jobs:
+  publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    environment: publish  # Create this environment in GitHub repo settings
+    permissions:
+      contents: read
+      id-token: write  # Required for NPM provenance
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read package version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check if version exists on NPM
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Checking $PACKAGE_NAME@$VERSION"
+
+          if npm view "$PACKAGE_NAME@$VERSION" version 2>/dev/null; then
+            echo "Version $VERSION already exists on NPM. Bump version first."
+            exit 1
+          else
+            echo "Version $VERSION not on NPM; proceeding."
+          fi
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      # Option A: Publish with provenance (recommended)
+      - name: Publish to NPM (with provenance)
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Option B: Publish without provenance (uncomment if needed)
+      # - name: Publish to NPM
+      #   run: npm publish --access public
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Summary
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "✓ Published $PACKAGE_NAME@$VERSION to NPM"
+          echo "✓ View at: https://www.npmjs.com/package/$PACKAGE_NAME"

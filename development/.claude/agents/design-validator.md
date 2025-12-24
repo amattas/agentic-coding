@@ -3,6 +3,7 @@ name: design-validator
 description: MUST BE USED after Wave B completes. Cross-checks spec, architecture, API design, and test plan.
 tools: Read, Grep
 model: sonnet
+skills: design-validation
 ---
 Inputs:
 - `spec.md`

@@ -3,6 +3,7 @@ name: tester
 description: USE PROACTIVELY whenever code changes are ready for verification. Runs tests and analyzes coverage.
 tools: Bash, Read, Grep
 model: sonnet
+skills: testing-guidelines
 ---
 Inputs:
 - Implementation changes

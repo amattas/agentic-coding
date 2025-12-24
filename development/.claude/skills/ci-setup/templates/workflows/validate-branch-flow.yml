@@ -1,0 +1,72 @@
+# Enforce branch flow rules for release branches
+# Ensures: main → release/latest → release/x.y.z
+
+name: Validate Branch Flow
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - 'release/**'
+
+jobs:
+  validate-source:
+    name: Validate PR Source Branch
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.draft }}
+
+    steps:
+      - name: Check branch flow rules
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          TARGET="${{ github.base_ref }}"
+          SOURCE="${{ github.head_ref }}"
+
+          echo "Validating branch flow..."
+          echo "   Source: $SOURCE"
+          echo "   Target: $TARGET"
+
+          {
+            echo "## Branch Flow Validation"
+            echo "- Source: \`$SOURCE\`"
+            echo "- Target: \`$TARGET\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Rule 1: release/latest can ONLY accept from main
+          if [[ "$TARGET" == "release/latest" ]]; then
+            if [[ "$SOURCE" != "main" ]]; then
+              echo "FAILED: release/latest only accepts PRs from 'main'"
+              {
+                echo "### Result: FAILED"
+                echo "release/latest requires source branch 'main'"
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+            echo "PASSED: Valid flow from main to release/latest"
+            echo "### Result: PASSED" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Rule 2: release/x.y.z-* can ONLY accept from release/latest
+          if [[ "$TARGET" =~ ^release/[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            if [[ "$SOURCE" != "release/latest" ]]; then
+              echo "FAILED: Version branches only accept PRs from 'release/latest'"
+              {
+                echo "### Result: FAILED"
+                echo "Version branches require source branch 'release/latest'"
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+            echo "PASSED: Valid flow from release/latest to version branch"
+            echo "### Result: PASSED" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Unknown target
+          echo "FAILED: Unknown release branch pattern: $TARGET"
+          echo "### Result: FAILED (unknown pattern)" >> "$GITHUB_STEP_SUMMARY"
+          exit 1

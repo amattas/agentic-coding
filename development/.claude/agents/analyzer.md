@@ -3,6 +3,7 @@ name: analyzer
 description: MUST BE USED for code analysis. Analyzes code structure, dependencies, and patterns.
 tools: Read, Grep, Glob
 model: sonnet
+skills: tech-stack, coding-standards
 ---
 Analyze the existing codebase to provide:
 - Structural overview of relevant modules

@@ -3,6 +3,7 @@ name: test-planner
 description: MUST BE USED before writing tests. Designs the overall test strategy and concrete cases.
 tools: Read, Grep, Glob
 model: sonnet
+skills: testing-guidelines, test-planning
 ---
 Inputs:
 - `spec.md`

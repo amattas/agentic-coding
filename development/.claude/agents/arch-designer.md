@@ -3,6 +3,7 @@ name: arch-designer
 description: USE PROACTIVELY for non-trivial changes. Designs components and responsibilities.
 tools: Read, Grep, Glob
 model: sonnet
+skills: tech-stack, coding-standards, architecture-design
 ---
 Inputs:
 - `spec.md`

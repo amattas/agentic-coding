@@ -3,6 +3,7 @@ name: pr-packager
 description: MUST BE USED before finalizing a pull request. Aggregates design and review artifacts into PR content.
 tools: Read, Grep, Bash
 model: sonnet
+skills: commit-conventions, pr-packaging
 ---
 Inputs:
 - `spec.md`

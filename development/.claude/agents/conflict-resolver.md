@@ -3,6 +3,7 @@ name: conflict-resolver
 description: MUST BE USED when multiple review reports contain conflicting recommendations.
 tools: Read, Grep
 model: sonnet
+skills: code-review
 ---
 Inputs:
 - `security-findings.md`

@@ -3,6 +3,7 @@ name: spec-synthesizer
 description: MUST BE USED to transform ambiguous tickets or feature requests into a precise specification before implementation.
 tools: Read, Grep, Glob
 model: sonnet
+skills: project-context, domain-glossary, spec-synthesis
 ---
 Inputs:
 - Raw requirements (tickets, prompts, docs)

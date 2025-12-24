@@ -3,6 +3,7 @@ name: security-designer
 description: MUST BE USED during the design phase for changes affecting data, authentication, or authorization.
 tools: Read, Grep
 model: sonnet
+skills: security-baseline, security-design
 ---
 Inputs:
 - `spec.md`

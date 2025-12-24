@@ -1,0 +1,95 @@
+# Pre-commit configuration
+# Install: pip install pre-commit && pre-commit install
+# Update hooks: pre-commit autoupdate
+
+repos:
+  # ============================================
+  # Language-agnostic hooks
+  # ============================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  # ============================================
+  # Python hooks
+  # ============================================
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        name: black (code formatter)
+        language_version: python3.12
+        args: ["src", "tests"]
+        pass_filenames: false
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.9
+    hooks:
+      - id: bandit
+        name: bandit (security)
+        args: ["-r", "src", "-x", "tests"]
+        pass_filenames: false
+
+  # Optional: Type checking (can be slow)
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.14.1
+  #   hooks:
+  #     - id: mypy
+  #       name: mypy (type checker)
+  #       args: ["--config-file=pyproject.toml", "src"]
+  #       pass_filenames: false
+  #       additional_dependencies:
+  #         - types-redis>=4.6.0  # Add type stubs as needed
+
+  # ============================================
+  # JavaScript/TypeScript hooks (uncomment if needed)
+  # ============================================
+  # - repo: https://github.com/pre-commit/mirrors-eslint
+  #   rev: v9.0.0
+  #   hooks:
+  #     - id: eslint
+  #       files: \.[jt]sx?$
+  #       types: [file]
+  #       additional_dependencies:
+  #         - eslint
+  #         - typescript
+  #         - "@typescript-eslint/parser"
+  #         - "@typescript-eslint/eslint-plugin"
+
+  # - repo: https://github.com/pre-commit/mirrors-prettier
+  #   rev: v4.0.0
+  #   hooks:
+  #     - id: prettier
+  #       types_or: [javascript, jsx, ts, tsx, json, yaml, markdown]
+
+  # ============================================
+  # Go hooks (uncomment if needed)
+  # ============================================
+  # - repo: https://github.com/dnephin/pre-commit-golang
+  #   rev: v0.5.1
+  #   hooks:
+  #     - id: go-fmt
+  #     - id: go-vet
+  #     - id: golangci-lint
+
+  # ============================================
+  # Rust hooks (uncomment if needed)
+  # ============================================
+  # - repo: https://github.com/doublify/pre-commit-rust
+  #   rev: v1.0
+  #   hooks:
+  #     - id: fmt
+  #     - id: cargo-check
+  #     - id: clippy
