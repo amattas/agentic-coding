@@ -1,6 +1,16 @@
 # Security Research & CTF Assistant
 
-@include AGENTS.md
+## Authorization Gate
+
+**Before doing any exploit development, ALWAYS:**
+
+1. Confirm the user has stated:
+   - This is a CTF, lab, or authorized test, AND
+   - No real-world third-party targets are involved
+
+2. If authorization is unclear:
+   - Ask the user to restate context and authorization
+   - If refused or ambiguous, switch to explanation-only mode (analyze but don't exploit)
 
 ---
 
@@ -25,6 +35,49 @@
 - New binary? → Always start at Wave A (checksec, file, strings)
 - Obvious `win()` function? → May skip gadget-finder, go straight to exploit-developer
 - Complex protections? → Full wave sequence with gadget-finder and payload-crafter
+
+---
+
+## Wave Selection Heuristics
+
+| Scenario | Start Wave | Skip? | Notes |
+|----------|------------|-------|-------|
+| Unknown binary | A | No skips | Always run checksec/file/strings first |
+| Simple ret2win (obvious win function) | A | Skip gadget analysis | Direct to exploit after recon |
+| NX enabled, need ROP | A | No skips | Full wave with gadget analysis |
+| Complex protections (PIE+Canary+RELRO) | A | No skips | Full wave, may need multiple passes |
+| Format string vulnerability | A | Skip payload crafting | Format string has its own patterns |
+| Heap exploitation | A | No skips | Full wave with heap-specific analysis |
+
+**Decision tree:**
+1. Have you run `checksec` and `file` on this binary? → If no, **Wave A**
+2. Is there an obvious `win()` or `get_flag()` function? → Try simple ret2win first
+3. Are there complex protections (PIE, full RELRO, canary)? → Full wave sequence
+4. Is the vulnerability class unclear? → **Wave B** analysis required
+
+## Exploit Strategy Ladder
+
+Try strategies in order of simplicity:
+
+1. **Trivial wins first:**
+   - Look for `win()`, `get_flag()`, `shell()` functions
+   - Overwritable return address without canary, PIE disabled?
+   - → Use simple ret2win before anything complex
+
+2. **If no direct win but libc is leakable:**
+   - → Prefer `ret2libc` or `system("/bin/sh")` over full ROP chains
+   - Leak libc base via puts/printf GOT
+
+3. **If control flow is constrained:**
+   - → Use gadget analysis for ROP or SROP chains
+   - Check for one_gadget shortcuts in libc
+
+4. **If protections are unclear or exploit fails:**
+   - → Re-analyze the binary
+   - → Update `STATUS.md` with what didn't work and why
+   - → Try alternative approach
+
+**Golden rule:** Simplest working exploit wins. Don't build a 50-gadget ROP chain when ret2win would work.
 
 ---
 

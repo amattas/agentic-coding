@@ -3,6 +3,7 @@ name: security-researcher
 description: USE to research CVEs, exploit techniques, tool usage, and prior writeups.
 tools: Read, WebSearch, WebFetch, Glob, Grep
 model: sonnet
+skills: tool-usage
 ---
 
 Research security topics, CVE details, exploitation techniques, and prior art.

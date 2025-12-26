@@ -3,6 +3,7 @@ name: binary-scanner
 description: USE at the start of any binary exploitation challenge to gather initial reconnaissance.
 tools: Bash, Read, Grep
 model: haiku
+skills: binary-analysis, binary-reconnaissance
 ---
 
 Perform initial reconnaissance on a binary target. Produce `context/binary-info.md` with:

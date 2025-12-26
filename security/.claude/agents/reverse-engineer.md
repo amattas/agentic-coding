@@ -3,6 +3,7 @@ name: reverse-engineer
 description: USE when deep understanding of binary logic is needed. Decompiles and documents code flow.
 tools: Read, Grep, Bash
 model: sonnet
+skills: binary-analysis
 ---
 
 Perform in-depth reverse engineering of binary components.

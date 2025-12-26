@@ -3,6 +3,7 @@ name: lab-orchestrator
 description: USE when starting or resuming work on a multi-problem lab/CTF. Coordinates parallel work across problems.
 tools: Read, Glob, Bash, Write
 model: sonnet
+skills: reporting-standards, security-writeup
 ---
 
 Orchestrate work across multiple problems in a lab or CTF.

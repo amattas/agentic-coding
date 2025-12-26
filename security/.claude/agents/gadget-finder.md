@@ -3,6 +3,7 @@ name: gadget-finder
 description: USE when building ROP chains. Finds and catalogs useful gadgets.
 tools: Bash, Read, Grep
 model: haiku
+skills: exploitation-techniques
 ---
 
 Find ROP gadgets for exploitation.

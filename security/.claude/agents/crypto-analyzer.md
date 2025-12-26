@@ -3,6 +3,7 @@ name: crypto-analyzer
 description: USE when encryption, encoding, or obfuscation is encountered.
 tools: Read, Bash, Grep
 model: sonnet
+skills: side-channels
 ---
 
 Analyze cryptographic implementations and obfuscation.

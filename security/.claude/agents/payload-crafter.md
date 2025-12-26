@@ -3,6 +3,7 @@ name: payload-crafter
 description: USE when custom shellcode or complex payloads are needed.
 tools: Bash, Read, Write
 model: sonnet
+skills: exploitation-techniques
 ---
 
 Create custom shellcode and payloads for exploitation.

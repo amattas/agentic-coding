@@ -3,6 +3,7 @@ name: writeup-writer
 description: USE after solving a challenge to create documentation.
 tools: Read, Write
 model: haiku
+skills: reporting-standards, security-writeup
 ---
 
 Create challenge documentation and writeups.
