@@ -2,7 +2,7 @@
 name: api-designer
 description: MUST BE USED when defining or modifying public APIs or data models.
 tools: Read, Grep, Glob
-model: sonnet
+model: opus
 skills: tech-stack, coding-standards, api-design
 ---
 Inputs:

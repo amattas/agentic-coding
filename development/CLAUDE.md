@@ -111,6 +111,35 @@ This workflow is optimized for Claude Code's lazy loading:
 - Reference skills in agent frontmatter (auto-loaded when needed)
 - Use wave sequence to avoid loading all agents simultaneously
 
+## Model Selection Strategy
+
+Agents are configured with specific models based on task complexity and requirements:
+
+### Opus 4.5 (Planning & Complex Reasoning)
+- **Wave B Design Agents**: spec-synthesizer, arch-designer, api-designer, test-planner, security-designer
+- **Wave C Validation**: design-validator
+- **Use when**: Complex reasoning, architectural decisions, specification synthesis required
+
+### Sonnet 4.5 (Implementation & Analysis)
+- **Wave D Implementation**: component-impl-backend, component-impl-frontend, component-impl-worker, test-writer, optimizer
+- **Wave E Packaging**: conflict-resolver, pr-packager
+- **Wave A Analysis**: performance-profiler (when detailed analysis required)
+- **Use when**: Code implementation, detailed analysis, or moderate complexity tasks
+
+### Haiku (Simple Tasks & Scans)
+- **Wave A Context**: repo-scanner, dependency-mapper, test-coverage-baseline, performance-baseline
+- **Wave D Simple Tasks**: doc-writer, branch-manager
+- **Wave E Simple Tasks**: tester, commit-packager
+- **Utility Agents**: analyzer, workflow-monitor
+- **Use when**: Simple scanning, basic operations, quick reviews
+
+### GPT-5.2 or GPT-5.2-codex (Code Review & Debugging)
+- **Wave E Code Review**: style-reviewer, perf-reviewer, security-scanner
+- **Use when**: Available via MCP server; provides specialized code review and debugging capabilities
+- **Fallback**: Sonnet 4.5 if GPT-5.2 not available
+
+**Note**: Model preferences are configured in each agent's frontmatter. Code review agents check for GPT-5.2 availability first, falling back to Sonnet if not present.
+
 ## When NOT to Over-Parallelize
 
 - Multiple agents editing the same file

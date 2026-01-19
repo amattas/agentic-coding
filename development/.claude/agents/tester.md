@@ -2,7 +2,7 @@
 name: tester
 description: USE PROACTIVELY whenever code changes are ready for verification. Runs tests and analyzes coverage.
 tools: Bash, Read, Grep
-model: sonnet
+model: haiku
 skills: testing-guidelines
 ---
 Inputs:
