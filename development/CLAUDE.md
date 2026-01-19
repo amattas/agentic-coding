@@ -97,6 +97,20 @@ project/
 - Respect the wave sequence
 - Follow priority order: Security > Correctness > Performance > Maintainability
 
+## Context Optimization
+
+This workflow is optimized for Claude Code's lazy loading:
+
+- **Skills**: Loaded on-demand when agents are invoked (frontmatter only until execution)
+- **Agents**: Frontmatter loaded initially; full context loaded when invoked via Task tool
+- **Wave Sequence**: Reduces parallel context by executing agents progressively
+- **MCP Tools**: Auto-deferred when descriptions exceed 10% of context (v2.1.7+)
+
+**Best practices:**
+- Invoke only necessary agents per wave
+- Reference skills in agent frontmatter (auto-loaded when needed)
+- Use wave sequence to avoid loading all agents simultaneously
+
 ## When NOT to Over-Parallelize
 
 - Multiple agents editing the same file
