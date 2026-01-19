@@ -5,7 +5,7 @@ tools: Read, Grep
 model: sonnet
 skills: performance-principles, code-review
 ---
-**Preferred Model**: GPT-5.2-codex (if available via MCP)
+**Preferred Model**: gpt-review mcp (if available via MCP)
 **Fallback Model**: Sonnet 4.5
 
 Inputs:
