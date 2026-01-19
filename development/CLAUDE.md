@@ -134,23 +134,23 @@ Agents are configured with specific models based on task complexity and requirem
 - **Utility Agents**: analyzer, workflow-monitor
 - **Use when**: Simple scanning, basic operations, quick reviews
 
-### GPT-5.2 and GPT-5.2-codex (Code Review & Debugging)
+### GPT-debug and GPT-review MCP (Code Review & Debugging)
 
 #### Debugging Tasks
-- **Preferred Model**: GPT-5.2 (if available via MCP)
-- **First Fallback**: GPT-5.2-codex
+- **Preferred Model**: GPT-debug MCP (if available)
+- **First Fallback**: GPT-review MCP
 - **Final Fallback**: Sonnet 4.5
 - **Use when**: Diagnosing bugs, tracing execution, analyzing runtime behavior
 
 #### Code Review Tasks
 - **Wave E Code Review**: style-reviewer, perf-reviewer, security-scanner
-- **Preferred Model**: GPT-5.2-codex (if available via MCP)
+- **Preferred Model**: GPT-review MCP (if available)
 - **Fallback**: Sonnet 4.5
 - **Use when**: Reviewing code style, performance, security vulnerabilities
 
 **Note**: Model preferences are configured in each agent's frontmatter. Agents check for GPT model availability via MCP server first, falling back to Claude models if not present.
 
-**MCP Configuration**: See `.mcp.json` in the project root for MCP server setup. This file includes stubs for GitHub integration and GPT model access (gpt-5.2 for debugging, gpt-5.2-codex for code review).
+**MCP Configuration**: See `.mcp.json` in the project root for MCP server setup. This file includes stubs for GitHub integration and GPT model access (gpt-debug MCP for debugging, gpt-review MCP for code review).
 
 ## When NOT to Over-Parallelize
 

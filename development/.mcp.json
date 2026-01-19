@@ -1,36 +1,36 @@
 {
   "mcpServers": {
     "github": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": ""
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_GITHUB_PAT"
       }
     },
-    "gpt-5.2": {
-      "command": "npx",
+    "gpt-review": {
+      "type": "stdio",
+      "command": "codex",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-openai"
+        "-m",
+        "gpt-5.2-codex",
+        "-c",
+        "model_reasoning_effort=medium",
+        "mcp"
       ],
-      "env": {
-        "OPENAI_API_KEY": "",
-        "OPENAI_MODEL": "gpt-5.2"
-      }
+      "env": {}
     },
-    "gpt-5.2-codex": {
-      "command": "npx",
+    "gpt-debug": {
+      "type": "stdio",
+      "command": "codex",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-openai"
+        "-m",
+        "gpt-5.2-codex-max",
+        "-c",
+        "model_reasoning_effort=xhigh",
+        "mcp"
       ],
-      "env": {
-        "OPENAI_API_KEY": "",
-        "OPENAI_MODEL": "gpt-5.2-codex"
-      }
+      "env": {}
     }
   }
 }
+
