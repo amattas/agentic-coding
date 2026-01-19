@@ -5,7 +5,7 @@ tools: Read, Grep, Bash
 model: sonnet
 skills: security-baseline, security-scanning
 ---
-**Preferred Model**: GPT-5.2 or GPT-5.2-codex (if available via MCP)
+**Preferred Model**: GPT-5.2-codex (if available via MCP)
 **Fallback Model**: Sonnet 4.5
 
 Inputs:

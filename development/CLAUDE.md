@@ -80,6 +80,7 @@ This file defines how Claude orchestrates subagents and skills for the SDLC in t
 project/
 ├── CLAUDE.md           # This file
 ├── STATUS.md           # Progress tracking
+├── .mcp.json           # MCP server configuration (GitHub, GPT models)
 ├── .claude/
 │   ├── agents/         # Subagent definitions
 │   └── skills/         # Activity skills with templates
@@ -133,12 +134,23 @@ Agents are configured with specific models based on task complexity and requirem
 - **Utility Agents**: analyzer, workflow-monitor
 - **Use when**: Simple scanning, basic operations, quick reviews
 
-### GPT-5.2 or GPT-5.2-codex (Code Review & Debugging)
-- **Wave E Code Review**: style-reviewer, perf-reviewer, security-scanner
-- **Use when**: Available via MCP server; provides specialized code review and debugging capabilities
-- **Fallback**: Sonnet 4.5 if GPT-5.2 not available
+### GPT-5.2 and GPT-5.2-codex (Code Review & Debugging)
 
-**Note**: Model preferences are configured in each agent's frontmatter. Code review agents check for GPT-5.2 availability first, falling back to Sonnet if not present.
+#### Debugging Tasks
+- **Preferred Model**: GPT-5.2 (if available via MCP)
+- **First Fallback**: GPT-5.2-codex
+- **Final Fallback**: Sonnet 4.5
+- **Use when**: Diagnosing bugs, tracing execution, analyzing runtime behavior
+
+#### Code Review Tasks
+- **Wave E Code Review**: style-reviewer, perf-reviewer, security-scanner
+- **Preferred Model**: GPT-5.2-codex (if available via MCP)
+- **Fallback**: Sonnet 4.5
+- **Use when**: Reviewing code style, performance, security vulnerabilities
+
+**Note**: Model preferences are configured in each agent's frontmatter. Agents check for GPT model availability via MCP server first, falling back to Claude models if not present.
+
+**MCP Configuration**: See `.mcp.json` in the project root for MCP server setup. This file includes stubs for GitHub integration and GPT model access (gpt-5.2 for debugging, gpt-5.2-codex for code review).
 
 ## When NOT to Over-Parallelize
 
