@@ -1,5 +1,7 @@
 # Agentic Coding Workflows
 
+> **⚠️ Archived:** This project is being archived. The [superpowers](https://github.com/obra/superpowers) and claude-security plugins now handle most of the capabilities provided here, making this consolidation effort largely redundant.
+
 A collection of AI-assisted coding workflows using Claude Code's subagent architecture for software development and security research.
 
 ## Background
